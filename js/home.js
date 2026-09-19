@@ -66,7 +66,7 @@ function startOrdersAutoRefresh() {
     const view = document.getElementById('ordersView');
     if (view && view.classList.contains('active')) loadOrders(true);
     else stopOrdersAutoRefresh();
-  }, 3000);
+  }, 1500);
 }
 
 function stopOrdersAutoRefresh() {
@@ -89,14 +89,12 @@ function renderOrderCard(o, opts) {
   const topClass = opts && opts.isTop ? ' order-card-top' : '';
   return `
     <div class="order-card${topClass}" data-order-id="${oid}">
-      <div class="order-card-main">
+      <div class="order-card-left">
         <div class="order-amount">${formatINR(o.amount)}</div>
-        <div class="order-meta">
-          <span class="order-id">${shortOrderId(oid)}</span>
-          <span class="order-dot">·</span>
-          <span>+${formatINR(reward)}</span>
-          <span class="order-dot">·</span>
-          <span>${rate}%</span>
+        <div class="order-id-row">ID ${shortOrderId(oid)}</div>
+        <div class="order-profit-row">
+          <span class="order-profit">+${formatINR(reward)}</span>
+          <span class="order-rate">${rate}%</span>
         </div>
       </div>
       <button class="btn btn-primary btn-buy" data-buy="${oid}" ${buyingOrderId === oid ? 'disabled' : ''}>
@@ -112,7 +110,6 @@ function applyOrderFilter(orders) {
   const max = Number(orderFilterMax);
   if (Number.isFinite(min) && min > 0) list = list.filter(o => Number(o.amount) >= min);
   if (Number.isFinite(max) && max > 0) list = list.filter(o => Number(o.amount) <= max);
-  // min → max (amount ascending)
   list.sort((a, b) => (Number(a.amount) || 0) - (Number(b.amount) || 0));
   return list;
 }
@@ -127,7 +124,6 @@ function paintOrders(orders) {
     return;
   }
 
-  // Top 3 only special: first card always light red
   list.innerHTML = filtered.map((o, i) =>
     renderOrderCard(o, { isTop: i === 0 })
   ).join('');

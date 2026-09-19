@@ -1,4 +1,4 @@
-/* Order filter + top card highlight */
+/* Order filter + premium cards */
 .orders-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .order-filter-bar {
   display: flex;
@@ -32,16 +32,101 @@
   padding: 6px 0;
 }
 .order-filter-sep { color: var(--text-muted); font-weight: 700; }
-.order-id { font-size: 10px !important; font-weight: 600 !important; }
 
-/* First order card — always light red */
+#ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: box-shadow .15s, border-color .15s;
+}
+.order-card:active {
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+}
+
+.order-card-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-amount {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.order-id-row {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+}
+
+.order-profit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.order-profit {
+  font-size: 14px;
+  font-weight: 800;
+  color: #16a34a;
+  letter-spacing: -0.01em;
+}
+
+.order-rate {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.btn-buy {
+  flex-shrink: 0;
+  min-width: 78px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.btn-buy:disabled { opacity: 0.6; }
+
+/* First order — light red highlight */
 .order-card-top {
-  background: #fff5f5 !important;
+  background: linear-gradient(135deg, #fff5f5 0%, #fff 60%) !important;
   border-color: #fecaca !important;
-  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.08) !important;
 }
 .order-card-top .order-amount { color: #b91c1c; }
-.order-card-top .order-id { color: #dc2626; }
+.order-card-top .order-id-row { color: #f87171; }
+.order-card-top .order-profit { color: #dc2626; }
+.order-card-top .order-rate {
+  background: #fef2f2;
+  color: #dc2626;
+}
 
 /* Pull to refresh */
 .ptr-indicator {
