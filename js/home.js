@@ -326,12 +326,9 @@ document.getElementById('withdrawForm')?.addEventListener('submit', async (e) =>
 });
 
 const depositModal = document.getElementById('depositModal');
+/* Recharge → Orders section (as requested) */
 document.getElementById('rechargeBtn')?.addEventListener('click', () => {
-  if (depositModal) {
-    depositModal.classList.add('open');
-    document.getElementById('depositAmount').value = '';
-    document.getElementById('depositAmount').focus();
-  }
+  showView('orders');
 });
 document.getElementById('depositModalClose')?.addEventListener('click', () => {
   depositModal?.classList.remove('open');
