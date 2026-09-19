@@ -21,10 +21,10 @@
     })();
   </script>
   <style>
+    /* Hide auth only when logged in. Home visibility = .view.active only */
     html.has-token #registerView,
     html.has-token #loginView,
     html.has-token #forgotView { display: none !important; }
-    html.has-token #homeView { display: flex !important; }
   </style>
 </head>
 <body>
