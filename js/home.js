@@ -1,4 +1,4 @@
-/* PuppyPay v2 — Dashboard, Orders, Referrals, History, Card, Withdraw */
+/* PuppyPay — Dashboard, Orders, Referrals, History, Card, Withdraw */
 
 async function loadDashboard() {
   if (!localStorage.getItem('puppypay_token')) return;
@@ -9,7 +9,6 @@ async function loadDashboard() {
     window.__dashboard = data;
     const u = data.user || {};
 
-    // Update cached user
     try {
       const cached = JSON.parse(localStorage.getItem('puppypay_user') || '{}');
       cached.balance = u.balance;
@@ -65,9 +64,9 @@ async function loadOrders() {
       <div class="order-card">
         <div class="flex justify-between items-center">
           <div class="order-amount">${formatINR(o.amount)}</div>
-          <span class="status-pill status-${o.status || 'pending'}">${o.status || 'available'}</span>
+          <span class="status-pill status-${o.status || 'available'}">${o.status || 'available'}</span>
         </div>
-        <div class="order-meta">Order #${o._id?.slice(-6) || '—'} · ${o.type || 'Buy'}</div>
+        <div class="order-meta">Order #${String(o._id || '').slice(-6) || '—'} · ${o.type || 'Buy'}</div>
         <div class="order-actions">
           <button class="btn btn-primary btn-sm" onclick="claimOrder('${o._id}')">Claim</button>
         </div>
@@ -84,6 +83,7 @@ async function claimOrder(id) {
   if (ok && data?.success) {
     showToast('Order claimed!', 'success');
     loadOrders();
+    loadDashboard();
   } else {
     showToast(data?.message || 'Failed to claim', 'error');
   }
@@ -166,7 +166,6 @@ document.getElementById('withdrawForm')?.addEventListener('submit', async (e) =>
   }
 });
 
-// Recharge modal
 const depositModal = document.getElementById('depositModal');
 document.getElementById('rechargeBtn')?.addEventListener('click', () => {
   if (depositModal) {
@@ -211,7 +210,6 @@ document.getElementById('sellBtn')?.addEventListener('click', () => {
   showView('orders');
 });
 
-// Card
 async function loadCard() {
   const form = document.getElementById('cardFormStage');
   const display = document.getElementById('cardDisplayStage');
@@ -234,18 +232,18 @@ async function loadCard() {
 
 function renderCard(d) {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('xpayCardNameDisplay', (d.name || '').toUpperCase());
-  set('xpayCardNumber', d.cardNumber || '•••• •••• •••• ••••');
-  set('xpayCardExpiry', d.expiry || 'MM/YY');
-  set('xpayCardCvv', d.cvv || '•••');
+  set('ppCardNameDisplay', (d.name || '').toUpperCase());
+  set('ppCardNumber', d.cardNumber || '•••• •••• •••• ••••');
+  set('ppCardExpiry', d.expiry || 'MM/YY');
+  set('ppCardCvv', d.cvv || '•••');
 }
 
-document.getElementById('xpayCardForm')?.addEventListener('submit', async (e) => {
+document.getElementById('ppCardForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const name = document.getElementById('xpayCardName').value.trim();
-  const mobile = document.getElementById('xpayCardMobile').value.trim();
-  const email = document.getElementById('xpayCardEmail').value.trim();
-  const address = document.getElementById('xpayCardAddress').value.trim();
+  const name = document.getElementById('ppCardName').value.trim();
+  const mobile = document.getElementById('ppCardMobile').value.trim();
+  const email = document.getElementById('ppCardEmail').value.trim();
+  const address = document.getElementById('ppCardAddress').value.trim();
   if (!name || !mobile || !email || !address) {
     showToast('All fields required');
     return;
@@ -261,11 +259,11 @@ document.getElementById('xpayCardForm')?.addEventListener('submit', async (e) =>
   }
 });
 
-document.getElementById('xpayCardFlip')?.addEventListener('click', function () {
+document.getElementById('ppCardFlip')?.addEventListener('click', function () {
   this.classList.toggle('flipped');
 });
 
-document.getElementById('xpayCardReissue')?.addEventListener('click', async () => {
+document.getElementById('ppCardReissue')?.addEventListener('click', async () => {
   if (!confirm('Reissue new card number & CVV?')) return;
   const { ok, data } = await walletApiCall('/card', 'GET');
   if (!ok || !data?.cardData) return;
@@ -279,14 +277,14 @@ document.getElementById('xpayCardReissue')?.addEventListener('click', async () =
   }
 });
 
-document.getElementById('xpayCardEditDetails')?.addEventListener('click', async () => {
+document.getElementById('ppCardEditDetails')?.addEventListener('click', async () => {
   const { ok, data } = await walletApiCall('/card', 'GET');
   if (ok && data?.cardData) {
     const d = data.cardData;
-    document.getElementById('xpayCardName').value = d.name || '';
-    document.getElementById('xpayCardMobile').value = d.mobile || '';
-    document.getElementById('xpayCardEmail').value = d.email || '';
-    document.getElementById('xpayCardAddress').value = d.address || '';
+    document.getElementById('ppCardName').value = d.name || '';
+    document.getElementById('ppCardMobile').value = d.mobile || '';
+    document.getElementById('ppCardEmail').value = d.email || '';
+    document.getElementById('ppCardAddress').value = d.address || '';
   }
   document.getElementById('cardDisplayStage').style.display = 'none';
   document.getElementById('cardFormStage').style.display = 'block';
