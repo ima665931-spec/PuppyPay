@@ -1,4 +1,4 @@
-/* PuppyPay v2 — App bootstrap */
+/* PuppyPay — App bootstrap */
 
 (async function init() {
   try {
@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
     const splash = document.getElementById('splash');
     if (splash) {
       splash.classList.add('hide');
-      setTimeout(() => splash.remove(), 600);
+      setTimeout(() => splash.remove(), 450);
     }
-  }, 1800);
+  }, 900);
 });
