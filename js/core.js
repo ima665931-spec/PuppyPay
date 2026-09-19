@@ -40,11 +40,9 @@ function showView(name) {
   if (name === 'card' && typeof loadCard === 'function') loadCard();
   if (name === 'withdraw' && typeof checkEligibility === 'function') checkEligibility();
 
-  // Home auto-refresh
   if (name === 'home') startHomeAutoRefresh();
   else stopHomeAutoRefresh();
 
-  // Orders auto-refresh every ~3s while on Orders tab
   if (name === 'orders') {
     if (typeof startOrdersAutoRefresh === 'function') startOrdersAutoRefresh();
   } else {
@@ -57,9 +55,8 @@ function startHomeAutoRefresh() {
   stopHomeAutoRefresh();
   homeRefreshTimer = setInterval(() => {
     const home = document.getElementById('homeView');
-    if (home && home.classList.contains('active') && typeof loadDashboard === 'function') {
-      loadDashboard();
-    } else stopHomeAutoRefresh();
+    if (home && home.classList.contains('active') && typeof loadDashboard === 'function') loadDashboard();
+    else stopHomeAutoRefresh();
   }, 30000);
 }
 function stopHomeAutoRefresh() {
@@ -92,12 +89,8 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
 document.getElementById('menuHistory')?.addEventListener('click', () => showView('history'));
 document.getElementById('menuWithdraw')?.addEventListener('click', () => showView('withdraw'));
 document.getElementById('menuCard')?.addEventListener('click', () => showView('card'));
-document.getElementById('menuSupport')?.addEventListener('click', () => {
-  showToast('Contact support via Telegram / WhatsApp');
-});
-document.getElementById('supportFabBtn')?.addEventListener('click', () => {
-  showToast('Contact support via Telegram / WhatsApp');
-});
+document.getElementById('menuSupport')?.addEventListener('click', () => showToast('Contact support via Telegram / WhatsApp'));
+document.getElementById('supportFabBtn')?.addEventListener('click', () => showToast('Contact support via Telegram / WhatsApp'));
 document.getElementById('avatarBtn')?.addEventListener('click', () => showView('mine'));
 
 function formatINR(n) {
@@ -133,16 +126,12 @@ function populateUserUI() {
     if (!raw) return;
     const user = JSON.parse(raw);
     const name = getDisplayName(user);
-
     const greet = document.getElementById('homeGreeting');
     if (greet) greet.innerHTML = `${getGreeting()}, <span>${name}</span>`;
-
     const pName = document.getElementById('profileName');
     if (pName) pName.textContent = name;
-
     const pId = document.getElementById('profileId');
     if (pId) pId.textContent = 'ID: ' + (user.appId || '—');
-
     const refCode = document.getElementById('myReferralCode');
     if (refCode) refCode.textContent = user.referralCode || '—';
   } catch (e) {}
@@ -167,28 +156,23 @@ document.getElementById('eyeToggle')?.addEventListener('click', () => {
   if (!track || !dots) return;
   const slides = track.children.length;
   let idx = 0;
-
   for (let i = 0; i < slides; i++) {
     const d = document.createElement('button');
     d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
     d.addEventListener('click', () => go(i));
     dots.appendChild(d);
   }
-
   function go(i) {
     idx = i;
     track.style.transform = `translateX(-${idx * 100}%)`;
     dots.querySelectorAll('.carousel-dot').forEach((d, j) => d.classList.toggle('active', j === idx));
   }
-
   setInterval(() => go((idx + 1) % slides), 4000);
 })();
 
 document.getElementById('copyRefBtn')?.addEventListener('click', () => {
   const code = document.getElementById('myReferralCode')?.textContent;
-  if (code && code !== '—') {
-    navigator.clipboard?.writeText(code).then(() => showToast('Copied!', 'success'));
-  }
+  if (code && code !== '—') navigator.clipboard?.writeText(code).then(() => showToast('Copied!', 'success'));
 });
 
 (function swipeNav() {
@@ -197,14 +181,12 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     const el = document.getElementById(key + 'View');
     if (!el) return;
     let startX = 0, startY = 0, tracking = false;
-
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       tracking = true;
     }, { passive: true });
-
     el.addEventListener('touchend', (e) => {
       if (!tracking) return;
       tracking = false;
@@ -214,6 +196,73 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
       const idx = ORDER.indexOf(key);
       if (dx < 0 && ORDER[idx + 1]) showView(ORDER[idx + 1]);
       else if (dx > 0 && ORDER[idx - 1]) showView(ORDER[idx - 1]);
+    }, { passive: true });
+  });
+})();
+
+/* Pull to refresh — all main screens */
+(function initPullToRefresh() {
+  const VIEWS = {
+    homeView: () => typeof loadDashboard === 'function' && loadDashboard(),
+    teamView: () => typeof loadReferrals === 'function' && loadReferrals(),
+    ordersView: () => typeof loadOrders === 'function' && loadOrders(false),
+    mineView: () => typeof populateUserUI === 'function' && populateUserUI(),
+    historyView: () => typeof loadHistory === 'function' && loadHistory(),
+  };
+
+  Object.keys(VIEWS).forEach(viewId => {
+    const view = document.getElementById(viewId);
+    if (!view) return;
+
+    let ptr = view.querySelector('.ptr-indicator');
+    if (!ptr) {
+      ptr = document.createElement('div');
+      ptr.className = 'ptr-indicator';
+      ptr.innerHTML = '<div class="ptr-spinner"></div>';
+      view.insertBefore(ptr, view.firstChild);
+    }
+
+    let startY = 0, pulling = false, refreshing = false;
+    const scrollParent = () => view.querySelector('.page-content') || view;
+
+    view.addEventListener('touchstart', (e) => {
+      if (refreshing || e.touches.length !== 1) return;
+      if (scrollParent().scrollTop > 2) return;
+      startY = e.touches[0].clientY;
+      pulling = true;
+    }, { passive: true });
+
+    view.addEventListener('touchmove', (e) => {
+      if (!pulling || refreshing) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy < 0) { ptr.classList.remove('visible', 'ready'); return; }
+      const pull = Math.min(dy * 0.4, 72);
+      ptr.style.transform = `translate(-50%, ${pull - 40}px)`;
+      if (pull > 48) ptr.classList.add('ready');
+      else ptr.classList.remove('ready');
+      if (pull > 8) ptr.classList.add('visible');
+    }, { passive: true });
+
+    view.addEventListener('touchend', async () => {
+      if (!pulling || refreshing) return;
+      pulling = false;
+      const isReady = ptr.classList.contains('ready');
+      ptr.classList.remove('ready');
+      if (!isReady) {
+        ptr.classList.remove('visible');
+        ptr.style.transform = '';
+        return;
+      }
+      refreshing = true;
+      ptr.classList.add('visible', 'spinning');
+      ptr.style.transform = 'translate(-50%, 12px)';
+      try {
+        await Promise.resolve(VIEWS[viewId]());
+        await new Promise(r => setTimeout(r, 450));
+      } catch (_) {}
+      refreshing = false;
+      ptr.classList.remove('visible', 'spinning');
+      ptr.style.transform = '';
     }, { passive: true });
   });
 })();
