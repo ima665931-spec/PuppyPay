@@ -17,7 +17,13 @@ function showToast(msg, type = '') {
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById(name + 'View') || document.getElementById(name);
-  if (target) target.classList.add('active');
+  if (target) {
+    target.classList.add('active');
+    // Prevent layout jolt: always start new tab at top
+    target.scrollTop = 0;
+    const pc = target.querySelector('.page-content');
+    if (pc) pc.scrollTop = 0;
+  }
 
   const nav = document.getElementById('bottomNav');
   const fab = document.getElementById('supportFabBtn');
@@ -223,7 +229,7 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     }
 
     let startY = 0, pulling = false, refreshing = false;
-    const scrollParent = () => view.querySelector('.page-content') || view;
+    const scrollParent = () => view;
 
     view.addEventListener('touchstart', (e) => {
       if (refreshing || e.touches.length !== 1) return;
