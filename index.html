@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0b0f1a">
+  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>PuppyPay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/pages.css">
   <script>
-    // Instant view: if token exists, show home immediately (no flash of login)
     (function(){
       try {
         if (localStorage.getItem('puppypay_token')) {
@@ -30,11 +29,10 @@
 </head>
 <body>
 
-  <!-- ========== SPLASH ========== -->
   <div id="splash" class="splash">
     <div class="splash-inner">
       <div class="splash-logo-wrap">
-        <img src="assets/logo.svg" alt="PuppyPay" class="splash-logo" width="96" height="96">
+        <img src="assets/logo.svg" alt="PuppyPay" class="splash-logo" width="80" height="80">
         <div class="splash-ring"></div>
       </div>
       <div class="splash-brand">PuppyPay</div>
@@ -47,7 +45,6 @@
 
 <div class="phone">
 
-  <!-- ==================== REGISTER ==================== -->
   <div class="view" id="registerView">
     <div class="auth-header">
       <div class="logo">
@@ -63,7 +60,7 @@
         <div class="field">
           <label>Mobile Number</label>
           <div class="input-shell">
-            <span class="icon">🇮🇳 +91</span>
+            <span class="icon">+91</span>
             <input type="tel" id="regMobile" placeholder="9876543210" required maxlength="10" inputmode="numeric">
           </div>
         </div>
@@ -111,10 +108,8 @@
         Already have an account? <a id="goToLogin">Log in</a>
       </div>
     </div>
-    <div class="toast" id="toastReg"></div>
   </div>
 
-  <!-- ==================== LOGIN ==================== -->
   <div class="view active" id="loginView">
     <div class="auth-header">
       <div class="logo">
@@ -130,7 +125,7 @@
         <div class="field">
           <label>Mobile or Email</label>
           <div class="input-shell">
-            <input type="text" id="loginId" placeholder="+91 or email" required>
+            <input type="text" id="loginId" placeholder="Mobile or email" required>
           </div>
         </div>
 
@@ -152,10 +147,8 @@
         New here? <a id="goToRegister">Create account</a>
       </div>
     </div>
-    <div class="toast" id="toastLogin"></div>
   </div>
 
-  <!-- ==================== FORGOT ==================== -->
   <div class="view" id="forgotView">
     <div class="auth-header">
       <div class="logo">
@@ -171,7 +164,7 @@
         <div class="field">
           <label>Mobile or Email</label>
           <div class="input-shell with-btn">
-            <input type="text" id="forgotId" placeholder="+91 or email" required>
+            <input type="text" id="forgotId" placeholder="Mobile or email" required>
             <button type="button" class="pill-btn" id="sendForgotOtpBtn">SEND OTP</button>
           </div>
         </div>
@@ -204,10 +197,8 @@
         Remembered it? <a id="backToLogin">Log in</a>
       </div>
     </div>
-    <div class="toast" id="toastForgot"></div>
   </div>
 
-  <!-- ==================== HOME ==================== -->
   <div class="view" id="homeView">
     <div class="home-header">
       <div class="home-top">
@@ -220,7 +211,7 @@
         </button>
       </div>
 
-      <div class="home-greeting" id="homeGreeting">Hello 👋</div>
+      <div class="home-greeting" id="homeGreeting">Hello</div>
 
       <div class="balance-card">
         <div class="balance-label">Total Balance</div>
@@ -236,9 +227,9 @@
     <div class="carousel-wrap">
       <div class="carousel" id="carousel">
         <div class="carousel-track" id="carouselTrack">
-          <div class="carousel-slide" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">Welcome to PuppyPay</div>
-          <div class="carousel-slide" style="background:linear-gradient(135deg,#0e7490,#22d3ee);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">Earn with Referrals</div>
-          <div class="carousel-slide" style="background:linear-gradient(135deg,#14532d,#22c55e);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">Fast Withdrawals</div>
+          <div class="carousel-slide" style="background:#2563eb;">Welcome to PuppyPay</div>
+          <div class="carousel-slide" style="background:#0d9488;">Earn with Referrals</div>
+          <div class="carousel-slide" style="background:#16a34a;">Fast & Secure Withdrawals</div>
         </div>
       </div>
       <div class="carousel-dots" id="carouselDots"></div>
@@ -286,7 +277,6 @@
     <div class="nav-spacer"></div>
   </div>
 
-  <!-- ==================== TEAM ==================== -->
   <div class="view" id="teamView">
     <div class="page-header">
       <h2>Team & Referrals</h2>
@@ -319,7 +309,6 @@
     <div class="nav-spacer"></div>
   </div>
 
-  <!-- ==================== ORDERS ==================== -->
   <div class="view" id="ordersView">
     <div class="page-header">
       <h2>Orders</h2>
@@ -332,7 +321,6 @@
     <div class="nav-spacer"></div>
   </div>
 
-  <!-- ==================== MINE ==================== -->
   <div class="view" id="mineView">
     <div class="page-header">
       <h2>Profile</h2>
@@ -378,7 +366,6 @@
     <div class="nav-spacer"></div>
   </div>
 
-  <!-- ==================== WITHDRAW ==================== -->
   <div class="view" id="withdrawView">
     <div class="page-header">
       <button class="back-btn" data-back="mine">
@@ -387,9 +374,7 @@
       <h2>Withdraw</h2>
     </div>
     <div class="page-content">
-      <div class="eligibility-note" id="eligibilityNote">
-        Checking eligibility...
-      </div>
+      <div class="eligibility-note" id="eligibilityNote">Checking eligibility...</div>
       <form id="withdrawForm" class="withdraw-form">
         <div class="field">
           <label>Amount (₹)</label>
@@ -408,7 +393,6 @@
     </div>
   </div>
 
-  <!-- ==================== HISTORY ==================== -->
   <div class="view" id="historyView">
     <div class="page-header">
       <button class="back-btn" data-back="mine">
@@ -421,7 +405,6 @@
     </div>
   </div>
 
-  <!-- ==================== CARD ==================== -->
   <div class="view" id="cardView">
     <div class="page-header">
       <button class="back-btn" data-back="mine">
@@ -432,56 +415,55 @@
     <div class="page-content">
       <div id="cardFormStage">
         <p class="text-secondary text-sm mb-lg">Fill details to issue your virtual card</p>
-        <form id="xpayCardForm">
+        <form id="ppCardForm">
           <div class="field">
             <label>Full Name</label>
-            <div class="input-shell"><input type="text" id="xpayCardName" required></div>
+            <div class="input-shell"><input type="text" id="ppCardName" required></div>
           </div>
           <div class="field">
             <label>Mobile</label>
-            <div class="input-shell"><input type="tel" id="xpayCardMobile" maxlength="10" required></div>
+            <div class="input-shell"><input type="tel" id="ppCardMobile" maxlength="10" required></div>
           </div>
           <div class="field">
             <label>Email</label>
-            <div class="input-shell"><input type="email" id="xpayCardEmail" required></div>
+            <div class="input-shell"><input type="email" id="ppCardEmail" required></div>
           </div>
           <div class="field">
             <label>Address</label>
-            <div class="input-shell"><input type="text" id="xpayCardAddress" required></div>
+            <div class="input-shell"><input type="text" id="ppCardAddress" required></div>
           </div>
           <button type="submit" class="btn btn-primary btn-block">Issue Card</button>
         </form>
       </div>
       <div id="cardDisplayStage" style="display:none;">
-        <div class="xpay-card">
-          <div class="xpay-card-inner" id="xpayCardFlip">
-            <div class="xpay-card-face xpay-card-front">
+        <div class="pp-card">
+          <div class="pp-card-inner" id="ppCardFlip">
+            <div class="pp-card-face pp-card-front">
               <div class="card-chip"></div>
-              <div class="card-number" id="xpayCardNumber">•••• •••• •••• ••••</div>
+              <div class="card-number" id="ppCardNumber">•••• •••• •••• ••••</div>
               <div class="flex justify-between">
-                <div class="card-name" id="xpayCardNameDisplay">NAME</div>
-                <div class="card-expiry" id="xpayCardExpiry">MM/YY</div>
+                <div class="card-name" id="ppCardNameDisplay">NAME</div>
+                <div class="card-expiry" id="ppCardExpiry">MM/YY</div>
               </div>
             </div>
-            <div class="xpay-card-face xpay-card-back">
-              <div style="height:40px;background:rgba(0,0,0,0.5);margin:0 -24px;"></div>
-              <div>
-                <div class="text-xs text-muted mb-sm">CVV</div>
-                <div class="card-number" id="xpayCardCvv">•••</div>
+            <div class="pp-card-face pp-card-back">
+              <div style="height:40px;background:rgba(0,0,0,0.5);margin:8px 0;"></div>
+              <div style="text-align:right;">
+                <div class="text-xs" style="opacity:0.7">CVV</div>
+                <div class="card-number" id="ppCardCvv">•••</div>
               </div>
-              <div class="text-xs text-muted">Tap to flip</div>
+              <div class="text-xs" style="opacity:0.6">Tap to flip</div>
             </div>
           </div>
         </div>
-        <div class="flex gap-md">
-          <button class="btn btn-secondary btn-block" id="xpayCardReissue">Reissue</button>
-          <button class="btn btn-ghost btn-block" id="xpayCardEditDetails">Edit Details</button>
+        <div class="flex-col gap-sm" style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-secondary btn-block" id="ppCardReissue">Reissue</button>
+          <button class="btn btn-ghost btn-block" id="ppCardEditDetails">Edit Details</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== BOTTOM NAV ==================== -->
   <nav class="bottom-nav" id="bottomNav" style="display:none;">
     <button class="nav-item active" data-view="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
@@ -501,14 +483,12 @@
     </button>
   </nav>
 
-  <!-- Support FAB (visible on home) -->
   <button class="support-fab" id="supportFabBtn" style="display:none;" aria-label="Support">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   </button>
 
-  <!-- Deposit Modal -->
   <div class="modal-overlay" id="depositModal">
-    <div class="modal-box glass">
+    <div class="modal-box">
       <button class="modal-close" id="depositModalClose">&times;</button>
       <h3 style="margin-bottom:6px;font-size:20px;font-weight:800;">Recharge</h3>
       <p class="text-secondary text-sm mb-lg">Enter amount to create a deposit request</p>
