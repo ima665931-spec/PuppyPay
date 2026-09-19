@@ -325,7 +325,7 @@
   color: var(--text-secondary);
 }
 .back-btn svg { width: 18px; height: 18px; }
-.page-content { padding: 16px 16px 24px; flex: 1; }
+.page-content { padding: 16px 16px 24px; flex: 1; overflow-y: auto; }
 
 .referral-hero {
   background: #fff;
@@ -379,25 +379,66 @@
   cursor: pointer;
 }
 
+/* ===== ORDERS — Buy on right ===== */
+#ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .order-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 16px;
-  margin-bottom: 10px;
+  padding: 14px 14px;
   box-shadow: var(--shadow-sm);
 }
+.order-card-main {
+  flex: 1;
+  min-width: 0;
+}
 .order-amount {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text);
+  letter-spacing: -.02em;
 }
 .order-meta {
-  font-size: 12.5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.order-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.order-dot { opacity: 0.5; }
+.order-channel {
+  font-size: 11px;
   color: var(--text-muted);
   margin-top: 2px;
 }
-.order-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-buy {
+  flex-shrink: 0;
+  min-width: 72px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+}
+.btn-buy:disabled {
+  opacity: 0.6;
+}
 
 .profile-card {
   display: flex;
