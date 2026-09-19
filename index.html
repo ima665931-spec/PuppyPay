@@ -161,7 +161,7 @@
 
   <div class="view" id="ordersView">
     <div class="page-header"><h2>Orders</h2></div>
-    <div class="page-content orders-scroll">
+    <div class="page-content">
       <div class="order-filter-bar">
         <div class="order-filter-inputs">
           <input type="number" id="orderFilterMin" placeholder="Min ₹" inputmode="numeric" min="0">
@@ -186,11 +186,30 @@
         <div class="profile-info"><h3 id="profileName">User</h3><p id="profileId">ID: —</p></div>
       </div>
       <div class="glass menu-list" style="padding:8px;">
-        <button class="menu-item" id="menuHistory">Transaction History</button>
-        <button class="menu-item" id="menuWithdraw">Withdraw</button>
-        <button class="menu-item" id="menuCard">PuppyPay Card</button>
-        <button class="menu-item" id="menuSupport">Support</button>
-        <button class="menu-item" id="logoutBtn" style="color:var(--danger);">Log out</button>
+        <button class="menu-item" id="menuHistory">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          Transaction History
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuWithdraw">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg></span>
+          Withdraw
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuCard">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+          PuppyPay Card
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuSupport">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          Support
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="logoutBtn" style="color:var(--danger);">
+          <span class="menu-icon" style="background:var(--danger-soft);color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span>
+          Log out
+        </button>
       </div>
     </div>
     <div class="nav-spacer"></div>
