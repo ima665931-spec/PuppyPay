@@ -36,13 +36,20 @@ function showView(name) {
 
   if (name === 'home' && typeof loadDashboard === 'function') loadDashboard();
   if (name === 'team' && typeof loadReferrals === 'function') loadReferrals();
-  if (name === 'orders' && typeof loadOrders === 'function') loadOrders();
   if (name === 'history' && typeof loadHistory === 'function') loadHistory();
   if (name === 'card' && typeof loadCard === 'function') loadCard();
   if (name === 'withdraw' && typeof checkEligibility === 'function') checkEligibility();
 
+  // Home auto-refresh
   if (name === 'home') startHomeAutoRefresh();
   else stopHomeAutoRefresh();
+
+  // Orders auto-refresh every ~3s while on Orders tab
+  if (name === 'orders') {
+    if (typeof startOrdersAutoRefresh === 'function') startOrdersAutoRefresh();
+  } else {
+    if (typeof stopOrdersAutoRefresh === 'function') stopOrdersAutoRefresh();
+  }
 }
 
 let homeRefreshTimer = null;
@@ -77,6 +84,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
   localStorage.removeItem('puppypay_token');
   localStorage.removeItem('puppypay_user');
   window.__dashboard = null;
+  if (typeof stopOrdersAutoRefresh === 'function') stopOrdersAutoRefresh();
   showView('login');
   showToast('Logged out');
 });
