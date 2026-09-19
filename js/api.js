@@ -1,6 +1,6 @@
 /* PuppyPay v2 — API Layer */
-const API_BASE = 'https://xpay-backend.vercel.app/api/auth';
-const WALLET_API_BASE = 'https://xpay-backend.vercel.app/api/wallet';
+const API_BASE = 'https://puppy-pay-backend.vercel.app/api/auth';
+const WALLET_API_BASE = 'https://puppy-pay-backend.vercel.app/api/wallet';
 
 let authRedirectInProgress = false;
 
@@ -25,10 +25,10 @@ function handleAuthFailure(data) {
   return { ...(data || {}), success: false, code: 'TOKEN_FAILED', status: 401 };
 }
 
-window.__xpayHandleAuthFailure = handleAuthFailure;
+window.__puppypayHandleAuthFailure = handleAuthFailure;
 
 function maybeLock(status, data) {
-  if (window.__xpayHandleApiLock && window.__xpayHandleApiLock(status, data)) return true;
+  if (window.__puppypayHandleApiLock && window.__puppypayHandleApiLock(status, data)) return true;
   return false;
 }
 
@@ -69,7 +69,7 @@ async function walletApiCall(path, method = 'GET', body) {
   if (isAuthFailure(res.status, data)) data = handleAuthFailure(data);
   return { ok: res.ok, data };
 }
-window.__xpayWalletApiCall = walletApiCall;
+window.__puppypayWalletApiCall = walletApiCall;
 
 function startCooldown(btn, seconds) {
   btn.disabled = true;
