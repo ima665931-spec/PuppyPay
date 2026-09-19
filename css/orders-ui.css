@@ -1,4 +1,4 @@
-/* Order filter, featured tags, pull-to-refresh */
+/* Order filter + top card highlight */
 .orders-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .order-filter-bar {
   display: flex;
@@ -32,41 +32,18 @@
   padding: 6px 0;
 }
 .order-filter-sep { color: var(--text-muted); font-weight: 700; }
-.orders-section-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 4px 0 8px;
-}
-.orders-featured {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.order-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 999px;
-  margin-bottom: 4px;
-  letter-spacing: 0.03em;
-}
-.order-tag-fast { background: #fef3c7; color: #b45309; }
-.order-tag-hot { background: #fee2e2; color: #b91c1c; }
-.order-tag-best-offer { background: #ede9fe; color: #6d28d9; }
-.order-tag-trending { background: #dbeafe; color: #1d4ed8; }
-.order-tag-top-pick { background: #fef9c3; color: #a16207; }
-.order-tag-flash { background: #ffedd5; color: #c2410c; }
-.order-tag-premium { background: #fce7f3; color: #be185d; }
-.order-tag-limited { background: #ecfdf5; color: #047857; }
 .order-id { font-size: 10px !important; font-weight: 600 !important; }
 
+/* First order card — always light red */
+.order-card-top {
+  background: #fff5f5 !important;
+  border-color: #fecaca !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.08) !important;
+}
+.order-card-top .order-amount { color: #b91c1c; }
+.order-card-top .order-id { color: #dc2626; }
+
+/* Pull to refresh */
 .ptr-indicator {
   position: absolute;
   top: 8px;

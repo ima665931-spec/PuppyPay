@@ -59,17 +59,6 @@ let allOrdersCache = [];
 let orderFilterMin = '';
 let orderFilterMax = '';
 
-const FEATURED_TAGS = [
-  { label: 'FAST', emoji: '⚡' },
-  { label: 'HOT', emoji: '🔥' },
-  { label: 'BEST OFFER', emoji: '💎' },
-  { label: 'TRENDING', emoji: '📈' },
-  { label: 'TOP PICK', emoji: '⭐' },
-  { label: 'FLASH', emoji: '💥' },
-  { label: 'PREMIUM', emoji: '👑' },
-  { label: 'LIMITED', emoji: '🎯' },
-];
-
 function startOrdersAutoRefresh() {
   stopOrdersAutoRefresh();
   loadOrders(false);
@@ -93,17 +82,14 @@ function shortOrderId(oid) {
   return s.slice(0, 3) + '…' + s.slice(-4);
 }
 
-function renderOrderCard(o, tag) {
+function renderOrderCard(o, opts) {
   const oid = o.orderId || o.id || '';
   const rate = o.profitRate != null ? (o.profitRate * 100).toFixed(1) : '4.9';
   const reward = o.reward != null ? o.reward : Math.round((Number(o.amount) || 0) * 0.049 * 100) / 100;
-  const tagHtml = tag
-    ? `<span class="order-tag order-tag-${tag.label.toLowerCase().replace(/\s+/g, '-')}">${tag.emoji} ${tag.label}</span>`
-    : '';
+  const topClass = opts && opts.isTop ? ' order-card-top' : '';
   return `
-    <div class="order-card" data-order-id="${oid}">
+    <div class="order-card${topClass}" data-order-id="${oid}">
       <div class="order-card-main">
-        ${tagHtml}
         <div class="order-amount">${formatINR(o.amount)}</div>
         <div class="order-meta">
           <span class="order-id">${shortOrderId(oid)}</span>
@@ -126,32 +112,25 @@ function applyOrderFilter(orders) {
   const max = Number(orderFilterMax);
   if (Number.isFinite(min) && min > 0) list = list.filter(o => Number(o.amount) >= min);
   if (Number.isFinite(max) && max > 0) list = list.filter(o => Number(o.amount) <= max);
+  // min → max (amount ascending)
+  list.sort((a, b) => (Number(a.amount) || 0) - (Number(b.amount) || 0));
   return list;
 }
 
-function paintOrders(orders, silent) {
-  const featuredEl = document.getElementById('ordersFeatured');
+function paintOrders(orders) {
   const list = document.getElementById('ordersList');
   if (!list) return;
 
   const filtered = applyOrderFilter(orders);
   if (!filtered.length) {
-    if (featuredEl) featuredEl.innerHTML = '';
     list.innerHTML = '<div class="empty-state"><p>No orders in this range</p></div>';
     return;
   }
 
-  const sorted = filtered.slice().sort((a, b) => (Number(b.reward) || 0) - (Number(a.reward) || 0));
-  const featured = sorted.slice(0, 8);
-  const featuredIds = new Set(featured.map(o => o.orderId || o.id));
-
-  if (featuredEl) {
-    featuredEl.innerHTML = featured.map((o, i) => renderOrderCard(o, FEATURED_TAGS[i % FEATURED_TAGS.length])).join('');
-  }
-
-  const rest = filtered.filter(o => !featuredIds.has(o.orderId || o.id));
-  list.innerHTML = rest.map(o => renderOrderCard(o, null)).join('') ||
-    (featured.length ? '' : '<div class="empty-state"><p>No orders</p></div>');
+  // Top 3 only special: first card always light red
+  list.innerHTML = filtered.map((o, i) =>
+    renderOrderCard(o, { isTop: i === 0 })
+  ).join('');
 }
 
 async function loadOrders(silent) {
@@ -171,15 +150,11 @@ async function loadOrders(silent) {
     const { ok, data } = await walletApiCall(path, 'GET');
     if (!ok || !data?.success || !data.orders?.length) {
       allOrdersCache = [];
-      if (!silent) {
-        const featuredEl = document.getElementById('ordersFeatured');
-        if (featuredEl) featuredEl.innerHTML = '';
-        if (list) list.innerHTML = '<div class="empty-state"><p>No orders available right now</p></div>';
-      }
+      if (!silent && list) list.innerHTML = '<div class="empty-state"><p>No orders available right now</p></div>';
       return;
     }
     allOrdersCache = data.orders;
-    paintOrders(allOrdersCache, silent);
+    paintOrders(allOrdersCache);
   } catch (e) {
     if (!silent && list) list.innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
   } finally {
@@ -194,7 +169,7 @@ function bindOrderFilter() {
   const apply = () => {
     orderFilterMin = minIn.value.trim();
     orderFilterMax = (maxIn && maxIn.value.trim()) || '';
-    if (allOrdersCache.length) paintOrders(allOrdersCache, false);
+    if (allOrdersCache.length) paintOrders(allOrdersCache);
     else loadOrders(false);
   };
   document.getElementById('orderFilterApply')?.addEventListener('click', apply);
@@ -243,10 +218,6 @@ async function buyOrder(orderId) {
 window.buyOrder = buyOrder;
 window.claimOrder = buyOrder;
 
-document.getElementById('ordersFeatured')?.addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-buy]');
-  if (btn) buyOrder(btn.getAttribute('data-buy'));
-});
 document.getElementById('ordersList')?.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-buy]');
   if (btn) buyOrder(btn.getAttribute('data-buy'));
@@ -326,7 +297,6 @@ document.getElementById('withdrawForm')?.addEventListener('submit', async (e) =>
 });
 
 const depositModal = document.getElementById('depositModal');
-/* Recharge → Orders section (as requested) */
 document.getElementById('rechargeBtn')?.addEventListener('click', () => {
   showView('orders');
 });
