@@ -118,9 +118,9 @@
     </div>
     <div class="carousel-wrap">
       <div class="carousel" id="carousel"><div class="carousel-track" id="carouselTrack">
-        <div class="carousel-slide"><img src="assets/banner1.svg" alt="Welcome" loading="eager"></div>
-        <div class="carousel-slide"><img src="assets/banner2.svg" alt="Referrals" loading="lazy"></div>
-        <div class="carousel-slide"><img src="assets/banner3.svg" alt="Withdrawals" loading="lazy"></div>
+        <div class="carousel-slide"><img src="assets/banner1.png" alt="Welcome" loading="eager"></div>
+        <div class="carousel-slide"><img src="assets/banner2.png" alt="Referrals" loading="lazy"></div>
+        <div class="carousel-slide"><img src="assets/banner3.png" alt="Withdrawals" loading="lazy"></div>
       </div></div>
       <div class="carousel-dots" id="carouselDots"></div>
     </div>
@@ -279,32 +279,12 @@
     </button>
   </nav>
 
-  <button class="support-fab" id="supportFabBtn" style="display:none;" aria-label="Support">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  </button>
+  <button class="support-fab" id="supportFab" aria-label="Support"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
 
-  <div class="modal-overlay" id="depositModal">
-    <div class="modal-box">
-      <button class="modal-close" id="depositModalClose">&times;</button>
-      <h3 style="margin-bottom:6px;font-size:20px;font-weight:800;">Recharge</h3>
-      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Enter amount to create deposit request</p>
-      <div class="field"><label>Amount (₹)</label><div class="input-shell"><input type="number" id="depositAmount" placeholder="Min 100" min="100"></div></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-        <button type="button" class="btn btn-secondary deposit-quick" data-amt="500">₹500</button>
-        <button type="button" class="btn btn-secondary deposit-quick" data-amt="1000">₹1000</button>
-        <button type="button" class="btn btn-secondary deposit-quick" data-amt="2000">₹2000</button>
-        <button type="button" class="btn btn-secondary deposit-quick" data-amt="5000">₹5000</button>
-      </div>
-      <button type="button" class="btn btn-primary btn-block" id="depositSubmitBtn">Create Request</button>
-    </div>
-  </div>
-
-</div><!-- .phone -->
-
-<script src="js/api.js"></script>
-<script src="js/core.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/home.js"></script>
-<script src="js/app.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
