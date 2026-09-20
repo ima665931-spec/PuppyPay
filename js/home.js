@@ -1,1 +1,2 @@
-/* LOADED FROM LOCAL - SEE NEXT */
+/* see /tmp/home_compact.js - loading via push */
+console.error('home.js restore pending');
