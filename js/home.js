@@ -66,7 +66,7 @@ function startOrdersAutoRefresh() {
     const view = document.getElementById('ordersView');
     if (view && view.classList.contains('active')) loadOrders(true);
     else stopOrdersAutoRefresh();
-  }, 1500);
+  }, 2000);
 }
 
 function stopOrdersAutoRefresh() {
@@ -137,11 +137,10 @@ async function loadOrders(silent) {
     list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div><p>Loading orders...</p></div>';
   }
   try {
-    let path = '/orders';
-    const q = [];
+    const q = ['renew=1'];
     if (orderFilterMin) q.push('min=' + encodeURIComponent(orderFilterMin));
     if (orderFilterMax) q.push('max=' + encodeURIComponent(orderFilterMax));
-    if (q.length) path += '?' + q.join('&');
+    const path = '/orders?' + q.join('&');
 
     const { ok, data } = await walletApiCall(path, 'GET');
     if (!ok || !data?.success || !data.orders?.length) {
