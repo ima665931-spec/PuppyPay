@@ -1,1 +1,310 @@
-see
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>PuppyPay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/orders-ui.css">
+  <script>
+    (function(){
+      try {
+        if (localStorage.getItem('puppypay_token')) {
+          document.documentElement.classList.add('has-token');
+        }
+      } catch(e){}
+    })();
+  </script>
+  <style>
+    html.has-token #registerView,
+    html.has-token #loginView,
+    html.has-token #forgotView { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-logo-wrap">
+        <img src="assets/logo.svg" alt="PuppyPay" class="splash-logo" width="80" height="80">
+      </div>
+      <div class="splash-brand">PuppyPay</div>
+      <div class="splash-tag">Smart · Fast · Friendly</div>
+      <div class="splash-paws"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+<div class="phone">
+
+  <div class="view" id="registerView">
+    <div class="auth-header">
+      <div class="logo">
+        <img src="assets/logo.svg" alt="" width="36" height="36" style="border-radius:50%">
+        <span class="logo-text">PuppyPay</span>
+      </div>
+      <h1>Create Account</h1>
+      <p>Join PuppyPay in under a minute</p>
+    </div>
+    <div class="glass auth-card">
+      <form id="registerForm">
+        <div class="field"><label>Mobile Number</label><div class="input-shell"><span class="icon">+91</span><input type="tel" id="regMobile" placeholder="9876543210" required maxlength="10" inputmode="numeric"></div></div>
+        <div class="field"><label>Email</label><div class="input-shell with-btn"><input type="email" id="regEmail" placeholder="you@email.com" required><button type="button" class="pill-btn" id="sendOtpBtn">SEND OTP</button></div></div>
+        <div class="field"><label>OTP</label><div class="input-shell"><input type="text" id="regOtp" placeholder="••••" maxlength="4" required inputmode="numeric"></div></div>
+        <div class="field"><label>Password</label><div class="input-shell"><input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6"></div></div>
+        <div class="field"><label>Confirm Password</label><div class="input-shell"><input type="password" id="regConfirmPassword" placeholder="••••••••" required minlength="6"></div></div>
+        <div class="field"><label>Referral Code <span class="optional">(optional)</span></label><div class="input-shell"><input type="text" id="regReferralCode" placeholder="Friend's code" autocomplete="off"></div></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
+      </form>
+      <div class="auth-switch">Already have an account? <a id="goToLogin">Log in</a></div>
+    </div>
+  </div>
+
+  <div class="view active" id="loginView">
+    <div class="auth-header">
+      <div class="logo"><img src="assets/logo.svg" alt="" width="36" height="36" style="border-radius:50%"><span class="logo-text">PuppyPay</span></div>
+      <h1>Welcome back</h1>
+      <p>Log in to continue</p>
+    </div>
+    <div class="glass auth-card">
+      <form id="loginForm">
+        <div class="field"><label>Mobile or Email</label><div class="input-shell"><input type="text" id="loginId" placeholder="Mobile or email" required></div></div>
+        <div class="field"><label>Password</label><div class="input-shell"><input type="password" id="loginPassword" placeholder="••••••••" required></div></div>
+        <div class="forgot-link"><a id="goToForgot">Forgot password?</a></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Log In</button>
+      </form>
+      <div class="auth-switch">New here? <a id="goToRegister">Create account</a></div>
+    </div>
+  </div>
+
+  <div class="view" id="forgotView">
+    <div class="auth-header">
+      <div class="logo"><img src="assets/logo.svg" alt="" width="36" height="36" style="border-radius:50%"><span class="logo-text">PuppyPay</span></div>
+      <h1>Reset Password</h1>
+      <p>We'll send an OTP to your email</p>
+    </div>
+    <div class="glass auth-card">
+      <form id="forgotForm">
+        <div class="field"><label>Mobile or Email</label><div class="input-shell with-btn"><input type="text" id="forgotId" placeholder="Mobile or email" required><button type="button" class="pill-btn" id="sendForgotOtpBtn">SEND OTP</button></div></div>
+        <div class="field"><label>OTP</label><div class="input-shell"><input type="text" id="forgotOtp" placeholder="••••" maxlength="4" required inputmode="numeric"></div></div>
+        <div class="field"><label>New Password</label><div class="input-shell"><input type="password" id="newPassword" placeholder="Min 6 characters" required minlength="6"></div></div>
+        <div class="field"><label>Confirm New Password</label><div class="input-shell"><input type="password" id="confirmNewPassword" placeholder="••••••••" required minlength="6"></div></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Reset Password</button>
+      </form>
+      <div class="auth-switch">Remembered it? <a id="backToLogin">Log in</a></div>
+    </div>
+  </div>
+
+  <div class="view" id="homeView">
+    <div class="home-header">
+      <div class="deco"></div><div class="deco2"></div>
+      <div class="home-top">
+        <div class="logo"><img src="assets/logo.svg" alt="" width="32" height="32" style="border-radius:50%"><span class="logo-text">PuppyPay</span></div>
+        <button class="avatar-btn" id="avatarBtn" aria-label="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+      </div>
+      <div class="home-greeting" id="homeGreeting">Hello</div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-label">Total Balance</div>
+      <div class="balance-row">
+        <div class="balance-amount" id="balanceAmount">₹ 0.00</div>
+        <button class="eye-btn" id="eyeToggle" aria-label="Toggle balance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+    </div>
+    <div class="carousel-wrap">
+      <div class="carousel" id="carousel"><div class="carousel-track" id="carouselTrack">
+        <div class="carousel-slide"><img src="assets/banner1.svg" alt="Welcome" loading="eager"></div>
+        <div class="carousel-slide"><img src="assets/banner2.svg" alt="Referrals" loading="lazy"></div>
+        <div class="carousel-slide"><img src="assets/banner3.svg" alt="Withdrawals" loading="lazy"></div>
+      </div></div>
+      <div class="carousel-dots" id="carouselDots"></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Complete Orders</div><div class="stat-value" id="completeOrders">0</div></div>
+      <div class="stat-card"><div class="stat-label">Today's Buying</div><div class="stat-value" id="todayBuying">₹0</div></div>
+      <div class="stat-card"><div class="stat-label">Today's Sold</div><div class="stat-value" id="todaySold">₹0</div></div>
+      <div class="stat-card"><div class="stat-label">Orders Today</div><div class="stat-value" id="todayCompleted">0</div></div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-chip"><div class="label">Total Deposit</div><div class="value" id="totalDeposit">₹0</div></div>
+      <div class="summary-chip"><div class="label">Total Withdraw</div><div class="value" id="totalWithdraw">₹0</div></div>
+      <div class="summary-chip"><div class="label">Referral Income</div><div class="value" id="totalReferral">₹0</div></div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-primary" id="rechargeBtn">Recharge</button>
+      <button class="btn btn-secondary" id="sellBtn">Sell</button>
+    </div>
+    <div class="nav-spacer"></div>
+  </div>
+
+  <div class="view" id="teamView">
+    <div class="page-header"><h2>Team & Referrals</h2></div>
+    <div class="page-content">
+      <div class="referral-hero">
+        <div class="text-sm text-secondary mb-md">Your Referral Code</div>
+        <div class="referral-code-box"><span class="code" id="myReferralCode">—</span><button class="copy-btn" id="copyRefBtn">Copy</button></div>
+        <p class="text-sm text-secondary">Share & earn when friends join</p>
+      </div>
+      <div class="stats-grid" style="padding:0;margin-bottom:16px;">
+        <div class="stat-card"><div class="stat-label">Total Referrals</div><div class="stat-value" id="refCount">0</div></div>
+        <div class="stat-card"><div class="stat-label">Earnings</div><div class="stat-value" id="refEarnings">₹0</div></div>
+      </div>
+      <div id="referralList" class="empty-state"><p>No referrals yet. Share your code!</p></div>
+    </div>
+    <div class="nav-spacer"></div>
+  </div>
+
+  <div class="view" id="ordersView">
+    <div class="page-header"><h2>Orders</h2></div>
+    <div class="page-content">
+      <div class="order-filter-bar">
+        <div class="order-filter-inputs">
+          <input type="number" id="orderFilterMin" placeholder="Min ₹" inputmode="numeric" min="0">
+          <span class="order-filter-sep">–</span>
+          <input type="number" id="orderFilterMax" placeholder="Max ₹" inputmode="numeric" min="0">
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" id="orderFilterApply">Filter</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="orderFilterClear">Clear</button>
+      </div>
+      <div id="ordersList">
+        <div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div><p>Loading orders...</p></div>
+      </div>
+    </div>
+    <div class="nav-spacer"></div>
+  </div>
+
+  <div class="view" id="mineView">
+    <div class="page-header"><h2>Profile</h2></div>
+    <div class="page-content">
+      <div class="glass profile-card">
+        <div class="avatar-btn" style="width:56px;height:56px;background:var(--bg-soft);border-color:var(--border);color:var(--text-muted);" id="profileAvatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="profile-info"><h3 id="profileName">User</h3><p id="profileId">ID: —</p></div>
+      </div>
+      <div class="glass menu-list" style="padding:8px;">
+        <button class="menu-item" id="menuHistory">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          Transaction History
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuWithdraw">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg></span>
+          Withdraw
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuCard">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+          PuppyPay Card
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuSupport">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          Support
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="menuDownloadApk">
+          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          Download APK
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="menu-item" id="logoutBtn" style="color:var(--danger);">
+          <span class="menu-icon" style="background:var(--danger-soft);color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span>
+          Log out
+        </button>
+      </div>
+    </div>
+    <div class="nav-spacer"></div>
+  </div>
+
+  <div class="view" id="withdrawView">
+    <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Withdraw</h2></div>
+    <div class="page-content">
+      <div class="eligibility-note" id="eligibilityNote">Checking eligibility...</div>
+      <form id="withdrawForm">
+        <div class="field"><label>Amount (₹)</label><div class="input-shell"><input type="number" id="withdrawAmount" placeholder="Enter amount" required min="100"></div></div>
+        <div class="field"><label>UPI ID / Bank Details</label><div class="input-shell"><input type="text" id="withdrawDest" placeholder="name@upi or account details" required></div></div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Request Withdrawal</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="view" id="historyView">
+    <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>History</h2></div>
+    <div class="page-content" id="historyList"><div class="empty-state"><p>No transactions yet</p></div></div>
+  </div>
+
+  <div class="view" id="cardView">
+    <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>PuppyPay Card</h2></div>
+    <div class="page-content">
+      <div id="cardFormStage">
+        <form id="ppCardForm">
+          <div class="field"><label>Full Name</label><div class="input-shell"><input type="text" id="ppCardName" required></div></div>
+          <div class="field"><label>Mobile</label><div class="input-shell"><input type="tel" id="ppCardMobile" maxlength="10" required></div></div>
+          <div class="field"><label>Email</label><div class="input-shell"><input type="email" id="ppCardEmail" required></div></div>
+          <div class="field"><label>Address</label><div class="input-shell"><input type="text" id="ppCardAddress" required></div></div>
+          <button type="submit" class="btn btn-primary btn-block">Issue Card</button>
+        </form>
+      </div>
+      <div id="cardDisplayStage" style="display:none;">
+        <div class="pp-card"><div class="pp-card-inner" id="ppCardFlip">
+          <div class="pp-card-face pp-card-front"><div class="card-chip"></div><div class="card-number" id="ppCardNumber">•••• •••• •••• ••••</div><div class="flex justify-between"><div class="card-name" id="ppCardNameDisplay">NAME</div><div class="card-expiry" id="ppCardExpiry">MM/YY</div></div></div>
+          <div class="pp-card-face pp-card-back"><div style="height:40px;background:rgba(0,0,0,.45);margin:8px -20px;"></div><div style="text-align:right;"><div class="text-xs" style="opacity:.7">CVV</div><div class="card-number" id="ppCardCvv">•••</div></div></div>
+        </div></div>
+        <button class="btn btn-secondary btn-block" id="ppCardReissue">Reissue</button>
+        <button class="btn btn-ghost btn-block" id="ppCardEditDetails">Edit Details</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottomNav" style="display:none;">
+    <button class="nav-item active" data-view="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      Home
+    </button>
+    <button class="nav-item" data-view="team">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+    </button>
+    <button class="nav-item" data-view="orders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Orders
+    </button>
+    <button class="nav-item" data-view="mine">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Mine
+    </button>
+  </nav>
+
+  <button class="support-fab" id="supportFabBtn" style="display:none;" aria-label="Support">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+
+  <div class="modal-overlay" id="depositModal">
+    <div class="modal-box">
+      <button class="modal-close" id="depositModalClose">&times;</button>
+      <h3 style="margin-bottom:6px;font-size:20px;font-weight:800;">Recharge</h3>
+      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Enter amount to create deposit request</p>
+      <div class="field"><label>Amount (₹)</label><div class="input-shell"><input type="number" id="depositAmount" placeholder="Min 100" min="100"></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <button type="button" class="btn btn-secondary deposit-quick" data-amt="500">₹500</button>
+        <button type="button" class="btn btn-secondary deposit-quick" data-amt="1000">₹1000</button>
+        <button type="button" class="btn btn-secondary deposit-quick" data-amt="2000">₹2000</button>
+        <button type="button" class="btn btn-secondary deposit-quick" data-amt="5000">₹5000</button>
+      </div>
+      <button type="button" class="btn btn-primary btn-block" id="depositSubmitBtn">Create Request</button>
+    </div>
+  </div>
+
+</div><!-- .phone -->
+
+<script src="js/api.js"></script>
+<script src="js/core.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/home.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
