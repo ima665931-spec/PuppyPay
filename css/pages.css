@@ -45,7 +45,9 @@
 #forgotView {
   background: linear-gradient(160deg, #1a3a2a 0%, #2d5a3d 35%, #3d7a4f 70%, #1e4030 100%) !important;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
 }
 #loginView::before,
 #registerView::before,
@@ -157,6 +159,14 @@
   background: rgba(255,255,255,0.22) !important;
   color: #fff !important;
   border: 1px solid rgba(255,255,255,0.35) !important;
+}
+
+/* Hide support FAB on auth pages */
+body:has(#loginView.active) .support-fab,
+body:has(#registerView.active) .support-fab,
+body:has(#forgotView.active) .support-fab,
+html:not(.has-token) .support-fab {
+  display: none !important;
 }
 
 /* HOME */
