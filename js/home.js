@@ -5,10 +5,8 @@ async function loadDashboard() {
   try {
     const { ok, data } = await walletApiCall('/dashboard', 'GET');
     if (!ok || !data?.success) return;
-
     window.__dashboard = data;
     const u = data.user || {};
-
     try {
       const cached = JSON.parse(localStorage.getItem('puppypay_user') || '{}');
       cached.balance = u.balance;
@@ -17,13 +15,10 @@ async function loadDashboard() {
       cached.referralCode = u.referralCode || cached.referralCode;
       localStorage.setItem('puppypay_user', JSON.stringify(cached));
     } catch (_) {}
-
     populateUserUI();
-
     const bal = document.getElementById('balanceAmount');
     if (bal && !balanceHidden) bal.textContent = formatINR(u.balance);
     else if (bal && balanceHidden) bal.dataset.real = formatINR(u.balance);
-
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('completeOrders', data.stats?.completeOrders ?? 0);
     set('todayBuying', formatINR(data.stats?.todayBuying ?? 0));
@@ -31,10 +26,8 @@ async function loadDashboard() {
     set('todayCompleted', data.stats?.todayCompleted ?? 0);
     set('totalDeposit', formatINR(data.stats?.totalDeposit ?? 0));
     set('totalWithdraw', formatINR(data.stats?.totalWithdraw ?? 0));
-    set('totalReferral', formatINR(data.stats?.totalReferral ?? 0));
-  } catch (e) {
-    console.warn('Dashboard load failed', e);
-  }
+    set('totalReferral', formatINR(data.stats?.totalReferral ?? data.stats?.totalReferralIncome ?? 0));
+  } catch (e) { console.warn('Dashboard load failed', e); }
 }
 
 async function loadReferrals() {
@@ -42,8 +35,8 @@ async function loadReferrals() {
     const { ok, data } = await walletApiCall('/referrals', 'GET');
     if (!ok || !data?.success) return;
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    set('refCount', data.totalReferrals ?? 0);
-    set('refEarnings', formatINR(data.totalEarnings ?? 0));
+    set('refCount', data.totalReferrals ?? data.referredCount ?? 0);
+    set('refEarnings', formatINR(data.totalEarnings ?? data.totalEarned ?? 0));
     if (data.referralCode) {
       const el = document.getElementById('myReferralCode');
       if (el) el.textContent = data.referralCode;
@@ -51,7 +44,6 @@ async function loadReferrals() {
   } catch (e) {}
 }
 
-/* ========== ORDERS ========== */
 let ordersRefreshTimer = null;
 let ordersLoading = false;
 let buyingOrderId = null;
@@ -59,6 +51,7 @@ let allOrdersCache = [];
 let orderFilterMin = '';
 let orderFilterMax = '';
 let paySheetTimer = null;
+let activePayment = null;
 
 function startOrdersAutoRefresh() {
   stopOrdersAutoRefresh();
@@ -69,42 +62,27 @@ function startOrdersAutoRefresh() {
     else stopOrdersAutoRefresh();
   }, 2000);
 }
-
 function stopOrdersAutoRefresh() {
-  if (ordersRefreshTimer) {
-    clearInterval(ordersRefreshTimer);
-    ordersRefreshTimer = null;
-  }
+  if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; }
 }
-
 function shortOrderId(oid) {
   const s = String(oid || '');
-  if (s.length <= 10) return s;
-  return s.slice(0, 3) + '…' + s.slice(-4);
+  return s.length <= 10 ? s : s.slice(0, 3) + '…' + s.slice(-4);
 }
-
 function renderOrderCard(o, opts) {
   const oid = o.orderId || o.id || '';
   const rate = o.profitRate != null ? (o.profitRate * 100).toFixed(1) : '4.9';
   const reward = o.reward != null ? o.reward : Math.round((Number(o.amount) || 0) * 0.049 * 100) / 100;
   const topClass = opts && opts.isTop ? ' order-card-top' : '';
-  return `
-    <div class="order-card${topClass}" data-order-id="${oid}">
-      <div class="order-card-left">
-        <div class="order-amount">${formatINR(o.amount)}</div>
-        <div class="order-id-row">ID ${shortOrderId(oid)}</div>
-        <div class="order-profit-row">
-          <span class="order-profit">+${formatINR(reward)}</span>
-          <span class="order-rate">${rate}%</span>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-buy" data-buy="${oid}" ${buyingOrderId === oid ? 'disabled' : ''}>
-        ${buyingOrderId === oid ? '...' : 'Buy'}
-      </button>
+  return `<div class="order-card${topClass}" data-order-id="${oid}">
+    <div class="order-card-left">
+      <div class="order-amount">${formatINR(o.amount)}</div>
+      <div class="order-id-row">ID ${shortOrderId(oid)}</div>
+      <div class="order-profit-row"><span class="order-profit">+${formatINR(reward)}</span><span class="order-rate">${rate}%</span></div>
     </div>
-  `;
+    <button class="btn btn-primary btn-buy" data-buy="${oid}" ${buyingOrderId === oid ? 'disabled' : ''}>${buyingOrderId === oid ? '...' : 'Buy'}</button>
+  </div>`;
 }
-
 function applyOrderFilter(orders) {
   let list = orders.slice();
   const min = Number(orderFilterMin);
@@ -114,22 +92,13 @@ function applyOrderFilter(orders) {
   list.sort((a, b) => (Number(a.amount) || 0) - (Number(b.amount) || 0));
   return list;
 }
-
 function paintOrders(orders) {
   const list = document.getElementById('ordersList');
   if (!list) return;
-
   const filtered = applyOrderFilter(orders);
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty-state"><p>No orders in this range</p></div>';
-    return;
-  }
-
-  list.innerHTML = filtered.map((o, i) =>
-    renderOrderCard(o, { isTop: i === 0 })
-  ).join('');
+  if (!filtered.length) { list.innerHTML = '<div class="empty-state"><p>No orders in this range</p></div>'; return; }
+  list.innerHTML = filtered.map((o, i) => renderOrderCard(o, { isTop: i === 0 })).join('');
 }
-
 async function loadOrders(silent) {
   if (ordersLoading) return;
   ordersLoading = true;
@@ -141,9 +110,7 @@ async function loadOrders(silent) {
     const q = ['renew=1'];
     if (orderFilterMin) q.push('min=' + encodeURIComponent(orderFilterMin));
     if (orderFilterMax) q.push('max=' + encodeURIComponent(orderFilterMax));
-    const path = '/orders?' + q.join('&');
-
-    const { ok, data } = await walletApiCall(path, 'GET');
+    const { ok, data } = await walletApiCall('/orders?' + q.join('&'), 'GET');
     if (!ok || !data?.success || !data.orders?.length) {
       allOrdersCache = [];
       if (!silent && list) list.innerHTML = '<div class="empty-state"><p>No orders available right now</p></div>';
@@ -153,11 +120,8 @@ async function loadOrders(silent) {
     paintOrders(allOrdersCache);
   } catch (e) {
     if (!silent && list) list.innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
-  } finally {
-    ordersLoading = false;
-  }
+  } finally { ordersLoading = false; }
 }
-
 function bindOrderFilter() {
   const minIn = document.getElementById('orderFilterMin');
   const maxIn = document.getElementById('orderFilterMax');
@@ -165,16 +129,11 @@ function bindOrderFilter() {
   const apply = () => {
     orderFilterMin = minIn.value.trim();
     orderFilterMax = (maxIn && maxIn.value.trim()) || '';
-    if (allOrdersCache.length) paintOrders(allOrdersCache);
-    else loadOrders(false);
+    if (allOrdersCache.length) paintOrders(allOrdersCache); else loadOrders(false);
   };
   document.getElementById('orderFilterApply')?.addEventListener('click', apply);
   document.getElementById('orderFilterClear')?.addEventListener('click', () => {
-    minIn.value = '';
-    if (maxIn) maxIn.value = '';
-    orderFilterMin = '';
-    orderFilterMax = '';
-    loadOrders(false);
+    minIn.value = ''; if (maxIn) maxIn.value = ''; orderFilterMin = ''; orderFilterMax = ''; loadOrders(false);
   });
   [minIn, maxIn].forEach(el => el?.addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(); }));
 }
@@ -182,34 +141,60 @@ setTimeout(bindOrderFilter, 0);
 
 function closePaySheet() {
   if (paySheetTimer) { clearInterval(paySheetTimer); paySheetTimer = null; }
+  activePayment = null;
   document.getElementById('paySheetOverlay')?.remove();
 }
 
 function showPaymentSheet(payment) {
   closePaySheet();
+  activePayment = payment;
   const amount = payment.amount;
   const upiId = payment.upiId || '';
   const orderId = payment.orderId || '';
   const qrUrl = payment.qrImageUrl ||
     ('https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' +
-      encodeURIComponent(payment.paymentUri || ''));
+      encodeURIComponent(payment.paymentUri || ('upi://pay?pa=' + encodeURIComponent(upiId) + '&am=' + Number(amount).toFixed(2) + '&cu=INR')));
   const expiresAt = payment.expiresAt ? new Date(payment.expiresAt).getTime() : Date.now() + 600000;
 
   const overlay = document.createElement('div');
   overlay.className = 'pay-sheet-overlay';
   overlay.id = 'paySheetOverlay';
   overlay.innerHTML = `
-    <div class="pay-sheet">
-      <h3>Pay exact amount</h3>
-      <div class="pay-sub">Order ${shortOrderId(orderId)} · valid 10 min</div>
-      <div class="pay-amount">${formatINR(amount)}</div>
-      <div class="pay-timer" id="payTimer">10:00 left</div>
-      <div class="pay-qr-wrap"><img src="${qrUrl}" alt="UPI QR" width="220" height="220"></div>
-      <div class="pay-upi">${upiId}</div>
-      <div class="pay-note">Scan QR or pay to UPI above. Amount is fixed.</div>
-      <div class="pay-actions">
-        <button type="button" class="btn btn-primary btn-block" id="payCopyUpi">Copy UPI ID</button>
-        <button type="button" class="btn btn-secondary btn-block" id="payCloseBtn">Close</button>
+    <div class="pay-sheet" id="paySheetInner">
+      <div id="payStep1">
+        <h3>Pay exact amount</h3>
+        <div class="pay-sub">Order ${shortOrderId(orderId)} · valid 10 minutes</div>
+        <div class="pay-amount">${formatINR(amount)}</div>
+        <div class="pay-timer" id="payTimer">10:00 left</div>
+        <div class="pay-qr-wrap"><img src="${qrUrl}" alt="UPI QR" width="220" height="220"></div>
+        <div class="pay-upi">${upiId}</div>
+        <div class="pay-note">Scan QR or pay exact amount to UPI above</div>
+        <div class="pay-actions">
+          <button type="button" class="btn btn-primary btn-block" id="payCompletedBtn">I have completed the order</button>
+          <button type="button" class="btn btn-secondary btn-block" id="payCopyUpi">Copy UPI ID</button>
+          <button type="button" class="btn btn-ghost btn-block" id="payCloseBtn">Close</button>
+        </div>
+      </div>
+      <div id="payStep2" class="pay-step2" style="display:none">
+        <h3>Submit proof</h3>
+        <div class="pay-sub">Order ${shortOrderId(orderId)} · ${formatINR(amount)}</div>
+        <div class="field">
+          <label>12-digit UTR (mandatory)</label>
+          <input type="tel" id="payUtrInput" maxlength="12" inputmode="numeric" placeholder="123456789012" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Transaction screenshot (mandatory)</label>
+          <div class="pay-upload" id="payUploadBox">
+            <input type="file" id="payProofInput" accept="image/*">
+            <strong>Tap to upload screenshot</strong>
+            <span>JPG / PNG</span>
+            <img class="pay-preview" id="payProofPreview" alt="">
+          </div>
+        </div>
+        <div class="pay-actions">
+          <button type="button" class="btn btn-primary btn-block btn-submit-pay" id="paySubmitBtn" disabled>Submit for review</button>
+          <button type="button" class="btn btn-ghost btn-block" id="payBackBtn">Back to QR</button>
+        </div>
       </div>
     </div>`;
   document.body.appendChild(overlay);
@@ -220,21 +205,80 @@ function showPaymentSheet(payment) {
     const s = String(left % 60).padStart(2, '0');
     const el = document.getElementById('payTimer');
     if (el) el.textContent = left > 0 ? `${m}:${s} left` : 'Expired';
-    if (left <= 0) clearInterval(paySheetTimer);
+    if (left <= 0 && paySheetTimer) clearInterval(paySheetTimer);
   };
   tick();
   paySheetTimer = setInterval(tick, 1000);
 
+  let proofDataUrl = '';
+  const updateSubmit = () => {
+    const utr = (document.getElementById('payUtrInput')?.value || '').replace(/\D/g, '');
+    const btn = document.getElementById('paySubmitBtn');
+    if (btn) btn.disabled = !(utr.length === 12 && proofDataUrl);
+  };
+
   document.getElementById('payCloseBtn')?.addEventListener('click', closePaySheet);
   document.getElementById('payCopyUpi')?.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(upiId); showToast('UPI copied', 'success'); }
+    catch (_) { showToast(upiId); }
+  });
+  document.getElementById('payCompletedBtn')?.addEventListener('click', () => {
+    document.getElementById('payStep1').style.display = 'none';
+    document.getElementById('payStep2').style.display = 'block';
+  });
+  document.getElementById('payBackBtn')?.addEventListener('click', () => {
+    document.getElementById('payStep2').style.display = 'none';
+    document.getElementById('payStep1').style.display = 'block';
+  });
+  document.getElementById('payUtrInput')?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12);
+    updateSubmit();
+  });
+  document.getElementById('payProofInput')?.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > 1.5 * 1024 * 1024) { showToast('Image max 1.5MB', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      proofDataUrl = String(reader.result || '');
+      const img = document.getElementById('payProofPreview');
+      if (img) { img.src = proofDataUrl; img.classList.add('show'); }
+      updateSubmit();
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('paySubmitBtn')?.addEventListener('click', async () => {
+    const utr = (document.getElementById('payUtrInput')?.value || '').replace(/\D/g, '');
+    if (utr.length !== 12 || !proofDataUrl) {
+      showToast('UTR (12 digit) + screenshot required', 'error');
+      return;
+    }
+    const btn = document.getElementById('paySubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
     try {
-      await navigator.clipboard.writeText(upiId);
-      showToast('UPI copied', 'success');
-    } catch (_) {
-      showToast(upiId);
+      const { ok, data } = await walletApiCall('/deposit', 'POST', {
+        orderId,
+        utr,
+        proofImage: proofDataUrl,
+        qrLabel: payment.label || payment.upiId || null,
+        upiId: payment.upiId || null,
+      });
+      if (ok && data?.success) {
+        showToast('Submitted for admin review', 'success');
+        closePaySheet();
+        loadDashboard();
+      } else {
+        showToast(data?.message || 'Submit failed', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Submit for review';
+      }
+    } catch (err) {
+      showToast('Network error', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Submit for review';
     }
   });
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closePaySheet(); });
 }
 
 async function buyOrder(orderId) {
@@ -246,9 +290,19 @@ async function buyOrder(orderId) {
   try {
     const { ok, data } = await walletApiCall(`/orders/${encodeURIComponent(orderId)}/claim`, 'POST');
     if (ok && data?.success) {
-      showToast('Order secured! Pay now', 'success');
       document.querySelectorAll(`.order-card[data-order-id="${orderId}"]`).forEach(el => el.remove());
-      if (data.payment) showPaymentSheet(data.payment);
+      const payment = data.payment || {
+        orderId: data.order?.orderId || orderId,
+        amount: data.order?.amount,
+        upiId: data.order?.upiId,
+        expiresAt: data.order?.expiresAt,
+      };
+      if (payment.amount != null) {
+        showPaymentSheet(payment);
+        showToast('Pay exact amount — 10 min', 'success');
+      } else {
+        showToast('Order secured but no payment info. Check UPI pool.', 'error');
+      }
       loadDashboard();
       setTimeout(() => loadOrders(true), 400);
     } else {
@@ -257,7 +311,7 @@ async function buyOrder(orderId) {
         showToast(data?.message || 'Order missed! Try another.', 'error');
         document.querySelectorAll(`.order-card[data-order-id="${orderId}"]`).forEach(el => el.remove());
       } else if (code === 'NO_UPI_POOL') {
-        showToast(data?.message || 'No UPI in pool. Ask admin to add UPI.', 'error');
+        showToast('No UPI in pool. Admin must add UPI first.', 'error');
         if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
       } else {
         showToast(data?.message || 'Failed to buy', 'error');
@@ -268,9 +322,7 @@ async function buyOrder(orderId) {
   } catch (e) {
     showToast('Network error', 'error');
     if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
-  } finally {
-    buyingOrderId = null;
-  }
+  } finally { buyingOrderId = null; }
 }
 window.buyOrder = buyOrder;
 window.claimOrder = buyOrder;
@@ -286,35 +338,17 @@ async function loadHistory() {
   list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div></div>';
   try {
     const { ok, data } = await walletApiCall('/history', 'GET');
-    if (!ok || !data?.success || !data.history?.length) {
-      list.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>';
-      return;
-    }
-    list.innerHTML = data.history.map(h => {
+    if (!ok || !data?.success) { list.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>'; return; }
+    const items = data.history || data.deposits || [];
+    if (!items.length) { list.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>'; return; }
+    list.innerHTML = items.map(h => {
       const type = (h.type || '').toLowerCase();
-      const isPlus = type.includes('deposit') || type.includes('referral') || type.includes('bonus');
-      return `
-        <div class="history-item">
-          <div class="history-icon ${type.includes('withdraw') ? 'withdraw' : type.includes('referral') ? 'referral' : 'deposit'}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              ${type.includes('withdraw')
-                ? '<path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/>'
-                : '<path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>'}
-            </svg>
-          </div>
-          <div class="history-details">
-            <div class="title">${h.title || h.type || 'Transaction'}</div>
-            <div class="time">${h.createdAt ? new Date(h.createdAt).toLocaleString('en-IN') : ''}</div>
-          </div>
-          <div class="history-amount ${isPlus ? 'plus' : 'minus'}">
-            ${isPlus ? '+' : '-'}${formatINR(h.amount)}
-          </div>
-        </div>
-      `;
+      const isPlus = type.includes('deposit') || type.includes('referral') || h.status === 'accepted';
+      return `<div class="history-item"><div class="history-details"><div class="title">${h.title || h.orderId || 'Transaction'}</div>
+        <div class="time">${h.createdAt ? new Date(h.createdAt).toLocaleString('en-IN') : ''}</div></div>
+        <div class="history-amount ${isPlus ? 'plus' : 'minus'}">${isPlus ? '+' : '-'}${formatINR(h.amount)}</div></div>`;
     }).join('');
-  } catch (e) {
-    list.innerHTML = '<div class="empty-state"><p>Could not load history</p></div>';
-  }
+  } catch (e) { list.innerHTML = '<div class="empty-state"><p>Could not load history</p></div>'; }
 }
 
 async function checkEligibility() {
@@ -322,14 +356,8 @@ async function checkEligibility() {
   if (!note) return;
   try {
     const { ok, data } = await walletApiCall('/eligibility', 'GET');
-    if (ok && data?.success) {
-      note.textContent = data.message || `You can withdraw. Min: ₹${data.minAmount || 100}`;
-    } else {
-      note.textContent = data?.message || 'Unable to check eligibility';
-    }
-  } catch (e) {
-    note.textContent = 'Could not check eligibility';
-  }
+    note.textContent = ok && data?.success ? (data.message || `You can withdraw. Min: ₹${data.minAmount || 100}`) : (data?.message || 'Unable to check eligibility');
+  } catch (e) { note.textContent = 'Could not check eligibility'; }
 }
 
 document.getElementById('withdrawForm')?.addEventListener('submit', async (e) => {
@@ -339,53 +367,30 @@ document.getElementById('withdrawForm')?.addEventListener('submit', async (e) =>
   if (!amount || amount < 100) { showToast('Minimum ₹100', 'error'); return; }
   if (!destination) { showToast('Enter UPI / bank details', 'error'); return; }
   const btn = e.target.querySelector('[type=submit]');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
+  btn.disabled = true; btn.textContent = 'Submitting...';
   const { ok, data } = await walletApiCall('/withdraw', 'POST', { amount, destination });
-  btn.disabled = false;
-  btn.textContent = 'Request Withdrawal';
-  if (ok && data?.success) {
-    showToast('Withdrawal requested!', 'success');
-    e.target.reset();
-    setTimeout(() => showView('mine'), 1000);
-  } else {
-    showToast(data?.message || 'Request failed', 'error');
-  }
+  btn.disabled = false; btn.textContent = 'Request Withdrawal';
+  if (ok && data?.success) { showToast('Withdrawal requested!', 'success'); e.target.reset(); setTimeout(() => showView('mine'), 1000); }
+  else showToast(data?.message || 'Request failed', 'error');
 });
 
 const depositModal = document.getElementById('depositModal');
-document.getElementById('rechargeBtn')?.addEventListener('click', () => {
-  showView('orders');
-});
-document.getElementById('depositModalClose')?.addEventListener('click', () => {
-  depositModal?.classList.remove('open');
-});
-depositModal?.addEventListener('click', (e) => {
-  if (e.target === depositModal) depositModal.classList.remove('open');
-});
+document.getElementById('rechargeBtn')?.addEventListener('click', () => showView('orders'));
+document.getElementById('depositModalClose')?.addEventListener('click', () => depositModal?.classList.remove('open'));
+depositModal?.addEventListener('click', (e) => { if (e.target === depositModal) depositModal.classList.remove('open'); });
 document.querySelectorAll('.deposit-quick').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('depositAmount').value = btn.dataset.amt;
-  });
+  btn.addEventListener('click', () => { document.getElementById('depositAmount').value = btn.dataset.amt; });
 });
 document.getElementById('depositSubmitBtn')?.addEventListener('click', async () => {
   const amount = Number(document.getElementById('depositAmount').value);
   if (!amount || amount < 100) { showToast('Minimum ₹100', 'error'); return; }
   const btn = document.getElementById('depositSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Creating...';
+  btn.disabled = true; btn.textContent = 'Creating...';
   const { ok, data } = await walletApiCall('/deposit', 'POST', { amount });
-  btn.disabled = false;
-  btn.textContent = 'Create Request';
-  if (ok && data?.success) {
-    depositModal?.classList.remove('open');
-    showToast('Deposit request created! Admin will verify soon.', 'success');
-    loadDashboard();
-  } else {
-    showToast(data?.message || 'Failed', 'error');
-  }
+  btn.disabled = false; btn.textContent = 'Create Request';
+  if (ok && data?.success) { depositModal?.classList.remove('open'); showToast('Deposit request created!', 'success'); loadDashboard(); }
+  else showToast(data?.message || 'Failed', 'error');
 });
-
 document.getElementById('sellBtn')?.addEventListener('click', () => showView('orders'));
 
 async function loadCard() {
@@ -394,20 +399,10 @@ async function loadCard() {
   if (!form || !display) return;
   try {
     const { ok, data } = await walletApiCall('/card', 'GET');
-    if (ok && data?.success && data.cardData?.name) {
-      form.style.display = 'none';
-      display.style.display = 'block';
-      renderCard(data.cardData);
-    } else {
-      form.style.display = 'block';
-      display.style.display = 'none';
-    }
-  } catch (e) {
-    form.style.display = 'block';
-    display.style.display = 'none';
-  }
+    if (ok && data?.success && data.cardData?.name) { form.style.display = 'none'; display.style.display = 'block'; renderCard(data.cardData); }
+    else { form.style.display = 'block'; display.style.display = 'none'; }
+  } catch (e) { form.style.display = 'block'; display.style.display = 'none'; }
 }
-
 function renderCard(d) {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('ppCardNameDisplay', (d.name || '').toUpperCase());
@@ -415,7 +410,6 @@ function renderCard(d) {
   set('ppCardExpiry', d.expiry || 'MM/YY');
   set('ppCardCvv', d.cvv || '•••');
 }
-
 document.getElementById('ppCardForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('ppCardName').value.trim();
@@ -429,27 +423,17 @@ document.getElementById('ppCardForm')?.addEventListener('submit', async (e) => {
     document.getElementById('cardDisplayStage').style.display = 'block';
     renderCard(data.cardData);
     showToast('Card issued!', 'success');
-  } else {
-    showToast(data?.message || 'Failed', 'error');
-  }
+  } else showToast(data?.message || 'Failed', 'error');
 });
-
 document.getElementById('ppCardFlip')?.addEventListener('click', function () { this.classList.toggle('flipped'); });
-
 document.getElementById('ppCardReissue')?.addEventListener('click', async () => {
   if (!confirm('Reissue new card number & CVV?')) return;
   const { ok, data } = await walletApiCall('/card', 'GET');
   if (!ok || !data?.cardData) return;
   const d = data.cardData;
-  const res = await walletApiCall('/card', 'POST', {
-    name: d.name, mobile: d.mobile, email: d.email, address: d.address, issueNew: true
-  });
-  if (res.ok && res.data?.success) {
-    renderCard(res.data.cardData);
-    showToast('New card issued', 'success');
-  }
+  const res = await walletApiCall('/card', 'POST', { name: d.name, mobile: d.mobile, email: d.email, address: d.address, issueNew: true });
+  if (res.ok && res.data?.success) { renderCard(res.data.cardData); showToast('New card issued', 'success'); }
 });
-
 document.getElementById('ppCardEditDetails')?.addEventListener('click', async () => {
   const { ok, data } = await walletApiCall('/card', 'GET');
   if (ok && data?.cardData) {
