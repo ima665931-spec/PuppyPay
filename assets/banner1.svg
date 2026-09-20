@@ -1,24 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320">
-  <defs>
-    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e40af"/>
-      <stop offset="100%" stop-color="#3b82f6"/>
-    </linearGradient>
-    <linearGradient id="g1b" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.15"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </linearGradient>
-  </defs>
-  <rect width="800" height="320" fill="url(#g1)" rx="24"/>
-  <circle cx="680" cy="60" r="90" fill="#ffffff" opacity="0.08"/>
-  <circle cx="720" cy="240" r="120" fill="#ffffff" opacity="0.06"/>
-  <rect x="40" y="0" width="200" height="320" fill="url(#g1b)"/>
-  <text x="48" y="110" fill="#fff" font-family="system-ui,sans-serif" font-size="32" font-weight="800">Earn 4.9% High</text>
-  <text x="48" y="155" fill="#fff" font-family="system-ui,sans-serif" font-size="36" font-weight="800">Commission</text>
-  <text x="48" y="200" fill="#bfdbfe" font-family="system-ui,sans-serif" font-size="18" font-weight="500">On Every Order · Instant Rewards</text>
-  <g transform="translate(600,90)">
-    <rect x="0" y="20" width="110" height="80" rx="14" fill="#fff" opacity="0.95"/>
-    <rect x="0" y="20" width="110" height="26" rx="14" fill="#93c5fd"/>
-    <text x="55" y="78" text-anchor="middle" fill="#1e40af" font-family="system-ui,sans-serif" font-size="22" font-weight="800">4.9%</text>
-  </g>
+  <image href="data:image/jpeg;base64,PLACEHOLDER1" width="800" height="320" preserveAspectRatio="xMidYMid slice"/>
 </svg>
