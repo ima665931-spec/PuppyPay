@@ -1,4 +1,4 @@
-/* Order filter + premium cards */
+/* Order filter + premium cards + payment sheet */
 .orders-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .order-filter-bar {
   display: flex;
@@ -48,12 +48,7 @@
   border-radius: 16px;
   padding: 16px 16px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-  transition: box-shadow .15s, border-color .15s;
 }
-.order-card:active {
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
-}
-
 .order-card-left {
   flex: 1;
   min-width: 0;
@@ -61,7 +56,6 @@
   flex-direction: column;
   gap: 4px;
 }
-
 .order-amount {
   font-size: 22px;
   font-weight: 800;
@@ -70,29 +64,23 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
 }
-
 .order-id-row {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
-  letter-spacing: 0.02em;
 }
-
 .order-profit-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 2px;
 }
-
 .order-profit {
   font-size: 14px;
   font-weight: 800;
   color: #16a34a;
-  letter-spacing: -0.01em;
 }
-
 .order-rate {
   font-size: 11px;
   font-weight: 700;
@@ -101,7 +89,6 @@
   padding: 2px 8px;
   border-radius: 999px;
 }
-
 .btn-buy {
   flex-shrink: 0;
   min-width: 78px;
@@ -110,11 +97,9 @@
   border-radius: 12px;
   font-size: 15px;
   font-weight: 800;
-  letter-spacing: 0.01em;
 }
 .btn-buy:disabled { opacity: 0.6; }
 
-/* First order — light red highlight */
 .order-card-top {
   background: linear-gradient(135deg, #fff5f5 0%, #fff 60%) !important;
   border-color: #fecaca !important;
@@ -128,7 +113,82 @@
   color: #dc2626;
 }
 
-/* Pull to refresh */
+/* Payment sheet after Buy */
+.pay-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.pay-sheet {
+  width: 100%;
+  max-width: 430px;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.15);
+}
+.pay-sheet h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.pay-sheet .pay-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.pay-amount {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.pay-timer {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  margin-bottom: 12px;
+}
+.pay-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.pay-qr-wrap img {
+  width: 220px;
+  height: 220px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.pay-upi {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.pay-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.pay-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .ptr-indicator {
   position: absolute;
   top: 8px;
