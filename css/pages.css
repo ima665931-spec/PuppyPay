@@ -39,6 +39,126 @@
   cursor: pointer;
 }
 
+/* ========== Glass Auth (Login / Register / Forgot) ========== */
+#loginView,
+#registerView,
+#forgotView {
+  background: linear-gradient(160deg, #1a3a2a 0%, #2d5a3d 35%, #3d7a4f 70%, #1e4030 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+#loginView::before,
+#registerView::before,
+#forgotView::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(134,239,172,0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(22,163,74,0.12) 0%, transparent 45%);
+  z-index: 0;
+  pointer-events: none;
+}
+#loginView > *,
+#registerView > *,
+#forgotView > * {
+  position: relative;
+  z-index: 1;
+}
+#loginView .auth-header,
+#registerView .auth-header,
+#forgotView .auth-header {
+  padding-top: 52px;
+}
+#loginView .auth-header h1,
+#registerView .auth-header h1,
+#forgotView .auth-header h1,
+#loginView .auth-header .logo-text,
+#registerView .auth-header .logo-text,
+#forgotView .auth-header .logo-text {
+  color: #fff !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+#loginView .auth-header p,
+#registerView .auth-header p,
+#forgotView .auth-header p {
+  color: rgba(255,255,255,0.88) !important;
+}
+#loginView .auth-card,
+#registerView .auth-card,
+#forgotView .auth-card {
+  background: rgba(255,255,255,0.14) !important;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28) !important;
+  border-radius: 24px !important;
+  margin: 0 18px 28px !important;
+}
+#loginView .auth-card label,
+#registerView .auth-card label,
+#forgotView .auth-card label {
+  color: rgba(255,255,255,0.92) !important;
+}
+#loginView .input-shell,
+#registerView .input-shell,
+#forgotView .input-shell {
+  background: rgba(255,255,255,0.18) !important;
+  border: 1px solid rgba(255,255,255,0.32) !important;
+}
+#loginView .input-shell:focus-within,
+#registerView .input-shell:focus-within,
+#forgotView .input-shell:focus-within {
+  background: rgba(255,255,255,0.25) !important;
+  border-color: rgba(134,239,172,0.6) !important;
+  box-shadow: 0 0 0 3px rgba(134,239,172,0.2) !important;
+}
+#loginView .input-shell input,
+#registerView .input-shell input,
+#forgotView .input-shell input {
+  color: #fff !important;
+}
+#loginView .input-shell input::placeholder,
+#registerView .input-shell input::placeholder,
+#forgotView .input-shell input::placeholder {
+  color: rgba(255,255,255,0.5) !important;
+}
+#loginView .input-shell .icon,
+#registerView .input-shell .icon,
+#forgotView .input-shell .icon {
+  color: rgba(255,255,255,0.7) !important;
+}
+#loginView .auth-switch,
+#registerView .auth-switch,
+#forgotView .auth-switch {
+  color: rgba(255,255,255,0.85) !important;
+}
+#loginView .auth-switch a,
+#registerView .auth-switch a,
+#forgotView .auth-switch a {
+  color: #86efac !important;
+  font-weight: 700;
+}
+#loginView .forgot-link a,
+#registerView .forgot-link a,
+#forgotView .forgot-link a {
+  color: rgba(255,255,255,0.9) !important;
+}
+#loginView .btn-primary,
+#registerView .btn-primary,
+#forgotView .btn-primary {
+  background: linear-gradient(180deg, #4ade80, #16a34a) !important;
+  box-shadow: 0 8px 22px rgba(22,163,74,0.45) !important;
+  border: none !important;
+  color: #fff !important;
+}
+#loginView .pill-btn,
+#registerView .pill-btn,
+#forgotView .pill-btn {
+  background: rgba(255,255,255,0.22) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.35) !important;
+}
+
 /* HOME */
 .home-header {
   position: relative;
