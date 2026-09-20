@@ -58,6 +58,7 @@ let buyingOrderId = null;
 let allOrdersCache = [];
 let orderFilterMin = '';
 let orderFilterMax = '';
+let paySheetTimer = null;
 
 function startOrdersAutoRefresh() {
   stopOrdersAutoRefresh();
@@ -179,6 +180,63 @@ function bindOrderFilter() {
 }
 setTimeout(bindOrderFilter, 0);
 
+function closePaySheet() {
+  if (paySheetTimer) { clearInterval(paySheetTimer); paySheetTimer = null; }
+  document.getElementById('paySheetOverlay')?.remove();
+}
+
+function showPaymentSheet(payment) {
+  closePaySheet();
+  const amount = payment.amount;
+  const upiId = payment.upiId || '';
+  const orderId = payment.orderId || '';
+  const qrUrl = payment.qrImageUrl ||
+    ('https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' +
+      encodeURIComponent(payment.paymentUri || ''));
+  const expiresAt = payment.expiresAt ? new Date(payment.expiresAt).getTime() : Date.now() + 600000;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pay-sheet-overlay';
+  overlay.id = 'paySheetOverlay';
+  overlay.innerHTML = `
+    <div class="pay-sheet">
+      <h3>Pay exact amount</h3>
+      <div class="pay-sub">Order ${shortOrderId(orderId)} · valid 10 min</div>
+      <div class="pay-amount">${formatINR(amount)}</div>
+      <div class="pay-timer" id="payTimer">10:00 left</div>
+      <div class="pay-qr-wrap"><img src="${qrUrl}" alt="UPI QR" width="220" height="220"></div>
+      <div class="pay-upi">${upiId}</div>
+      <div class="pay-note">Scan QR or pay to UPI above. Amount is fixed.</div>
+      <div class="pay-actions">
+        <button type="button" class="btn btn-primary btn-block" id="payCopyUpi">Copy UPI ID</button>
+        <button type="button" class="btn btn-secondary btn-block" id="payCloseBtn">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const tick = () => {
+    const left = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+    const m = String(Math.floor(left / 60)).padStart(2, '0');
+    const s = String(left % 60).padStart(2, '0');
+    const el = document.getElementById('payTimer');
+    if (el) el.textContent = left > 0 ? `${m}:${s} left` : 'Expired';
+    if (left <= 0) clearInterval(paySheetTimer);
+  };
+  tick();
+  paySheetTimer = setInterval(tick, 1000);
+
+  document.getElementById('payCloseBtn')?.addEventListener('click', closePaySheet);
+  document.getElementById('payCopyUpi')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(upiId);
+      showToast('UPI copied', 'success');
+    } catch (_) {
+      showToast(upiId);
+    }
+  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closePaySheet(); });
+}
+
 async function buyOrder(orderId) {
   if (!orderId || buyingOrderId) return;
   buyingOrderId = orderId;
@@ -188,8 +246,9 @@ async function buyOrder(orderId) {
   try {
     const { ok, data } = await walletApiCall(`/orders/${encodeURIComponent(orderId)}/claim`, 'POST');
     if (ok && data?.success) {
-      showToast('Order secured! 🎉', 'success');
+      showToast('Order secured! Pay now', 'success');
       document.querySelectorAll(`.order-card[data-order-id="${orderId}"]`).forEach(el => el.remove());
+      if (data.payment) showPaymentSheet(data.payment);
       loadDashboard();
       setTimeout(() => loadOrders(true), 400);
     } else {
@@ -197,6 +256,9 @@ async function buyOrder(orderId) {
       if (code === 'ORDER_MISSED' || code === 'ORDER_UNAVAILABLE') {
         showToast(data?.message || 'Order missed! Try another.', 'error');
         document.querySelectorAll(`.order-card[data-order-id="${orderId}"]`).forEach(el => el.remove());
+      } else if (code === 'NO_UPI_POOL') {
+        showToast(data?.message || 'No UPI in pool. Ask admin to add UPI.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
       } else {
         showToast(data?.message || 'Failed to buy', 'error');
         if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
