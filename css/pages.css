@@ -233,17 +233,21 @@ html:not(.has-token) .support-fab {
 }
 .avatar-btn svg { width: 20px; height: 20px; }
 
+/* Balance card — soft blue tint */
 .balance-card {
   position: relative;
   z-index: 5;
   margin: -72px 16px 0;
-  background: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.94) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(191, 219, 254, 0.9);
   border-radius: 22px;
   padding: 20px 18px;
-  box-shadow: 0 16px 40px rgba(30, 58, 138, .16), 0 4px 12px rgba(30, 58, 138, .08);
+  box-shadow:
+    0 16px 40px rgba(30, 58, 138, .14),
+    0 4px 12px rgba(30, 58, 138, .07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   flex-shrink: 0;
 }
 .balance-label {
@@ -339,14 +343,18 @@ html:not(.has-token) .support-fab {
   padding: 16px 16px 0;
   flex-shrink: 0;
 }
+/* Stat cards — soft blue tint */
 .stat-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.92) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(191, 219, 254, 0.85);
   border-radius: 18px;
   padding: 16px;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 4px 14px rgba(30, 58, 138, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -374,18 +382,22 @@ html:not(.has-token) .support-fab {
   min-height: 72px;
 }
 .summary-row::-webkit-scrollbar { display: none; }
+/* Summary chips — soft blue tint */
 .summary-chip {
   flex: 1;
   min-width: 100px;
   min-height: 64px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.92) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(191, 219, 254, 0.85);
   border-radius: 16px;
   padding: 14px 10px;
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 4px 12px rgba(30, 58, 138, 0.05),
+    0 1px 3px rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 .summary-chip .label {
   font-size: 11px;
@@ -470,16 +482,20 @@ html:not(.has-token) .support-fab {
   overflow-y: auto;
 }
 
+/* Referral hero — soft blue tint */
 .referral-hero {
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.93) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(191, 219, 254, 0.9);
   border-radius: var(--r-xl);
   padding: 22px;
   margin-bottom: 16px;
   text-align: center;
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    0 8px 24px rgba(30, 58, 138, 0.07),
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   position: relative;
   overflow: hidden;
 }
@@ -533,13 +549,16 @@ html:not(.has-token) .support-fab {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.92) 100%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(191, 219, 254, 0.85);
   border-radius: var(--r-lg);
   padding: 16px;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 4px 14px rgba(30, 58, 138, 0.06),
+    0 1px 3px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 .order-card-main { flex: 1; min-width: 0; }
 .order-amount {
