@@ -282,3 +282,19 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     }, { passive: true });
   });
 })();
+
+/* Auto-load Mine UI styles + script */
+(function loadMineExtras() {
+  if (!document.querySelector('link[href*="mine-ui.css"]')) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'css/mine-ui.css';
+    document.head.appendChild(l);
+  }
+  if (!document.querySelector('script[src*="mine.js"]')) {
+    const s = document.createElement('script');
+    s.src = 'js/mine.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+})();
