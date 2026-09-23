@@ -8,28 +8,28 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.92) 100%);
-  border: 1px solid rgba(191, 219, 254, 0.9);
+  background: linear-gradient(160deg, #ffffff 0%, #eff6ff 45%, #dbeafe 100%);
+  border: 1.5px solid #93c5fd;
   border-radius: 16px;
   padding: 16px;
   box-shadow:
-    0 4px 14px rgba(30, 58, 138, 0.06),
-    0 1px 3px rgba(15, 23, 42, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    0 6px 18px rgba(37, 99, 235, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .order-card-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .order-amount { font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #0f172a; line-height: 1.15; }
 .order-id-row { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: #94a3b8; }
 .order-profit-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
 .order-profit { font-size: 14px; font-weight: 800; color: #16a34a; }
-.order-rate { font-size: 11px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 999px; }
+.order-rate { font-size: 11px; font-weight: 700; color: #2563eb; background: #dbeafe; padding: 2px 8px; border-radius: 999px; }
 .btn-buy { flex-shrink: 0; min-width: 78px; height: 44px; padding: 0 18px; border-radius: 12px; font-size: 15px; font-weight: 800; }
 .order-card-top {
-  background: linear-gradient(145deg, #fff5f5 0%, #fef2f2 60%, #fff 100%) !important;
-  border-color: #fecaca !important;
+  background: linear-gradient(160deg, #ffffff 0%, #fef2f2 40%, #fee2e2 100%) !important;
+  border-color: #fca5a5 !important;
   box-shadow:
-    0 4px 14px rgba(220, 38, 38, 0.08),
-    0 1px 3px rgba(15, 23, 42, 0.04),
+    0 6px 18px rgba(220, 38, 38, 0.1),
+    0 2px 6px rgba(15, 23, 42, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 .order-card-top .order-amount { color: #b91c1c; }
@@ -85,14 +85,14 @@
 /* ===== Pro History Cards — tinted by category ===== */
 #historyList { display: flex; flex-direction: column; gap: 10px; }
 .history-card {
-  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(239,246,255,0.9) 100%);
-  border: 1px solid rgba(191, 219, 254, 0.85);
+  background: linear-gradient(160deg, #ffffff 0%, #eff6ff 45%, #dbeafe 100%);
+  border: 1.5px solid #93c5fd;
   border-radius: 14px;
   padding: 14px 16px;
   box-shadow:
-    0 4px 14px rgba(30, 58, 138, 0.05),
-    0 1px 3px rgba(15, 23, 42, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    0 6px 16px rgba(37, 99, 235, 0.08),
+    0 2px 5px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .history-card-top {
   display: flex;
@@ -140,24 +140,24 @@
 }
 .history-time { margin-left: auto; }
 
-/* Deposit = soft green tint */
+/* Deposit = clearly green */
 .history-card.dep {
-  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(236,253,245,0.94) 100%);
-  border-color: rgba(167, 243, 208, 0.95);
+  background: linear-gradient(160deg, #ffffff 0%, #ecfdf5 40%, #d1fae5 100%);
+  border-color: #6ee7b7;
   border-left: 4px solid #22c55e;
   box-shadow:
-    0 4px 14px rgba(22, 163, 74, 0.07),
-    0 1px 3px rgba(15, 23, 42, 0.04),
+    0 6px 16px rgba(22, 163, 74, 0.12),
+    0 2px 5px rgba(15, 23, 42, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Withdraw = soft red tint */
+/* Withdraw = clearly red */
 .history-card.wd {
-  background: linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(254,242,242,0.94) 100%);
-  border-color: rgba(254, 202, 202, 0.95);
+  background: linear-gradient(160deg, #ffffff 0%, #fef2f2 40%, #fee2e2 100%);
+  border-color: #fca5a5;
   border-left: 4px solid #ef4444;
   box-shadow:
-    0 4px 14px rgba(220, 38, 38, 0.07),
-    0 1px 3px rgba(15, 23, 42, 0.04),
+    0 6px 16px rgba(220, 38, 38, 0.12),
+    0 2px 5px rgba(15, 23, 42, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
