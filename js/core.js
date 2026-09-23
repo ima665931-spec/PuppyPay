@@ -298,3 +298,65 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     document.body.appendChild(s);
   }
 })();
+
+/* Mine fixes: default avatar from assets + auto notif on open */
+(function () {
+  function fixAvatars() {
+    try {
+      var src = null;
+      try { src = localStorage.getItem('puppypay_avatar'); } catch (_) {}
+      if (!src) src = 'assets/default-avatar.jpg';
+      var img = document.getElementById('profileAvatarImg');
+      if (img) {
+        img.src = src;
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Ccircle fill='%231e3a8a' cx='64' cy='64' r='64'/%3E%3Cellipse cx='64' cy='50' rx='45' ry='14' fill='%23fbbf24'/%3E%3Crect x='19' y='46' width='90' height='8' rx='2' fill='%23dc2626'/%3E%3Ccircle fill='%23fde68a' cx='64' cy='78' r='24'/%3E%3C/svg%3E";
+        };
+      }
+      var home = document.getElementById('homeAvatarImg');
+      if (home) {
+        home.src = src;
+        home.onerror = function () { this.onerror = null; };
+      }
+    } catch (_) {}
+  }
+
+  function autoAskNotif() {
+    try {
+      if (localStorage.getItem('puppypay_notif_never') === '1') return;
+      if (!('Notification' in window)) return;
+      if (Notification.permission !== 'default') return;
+      if (sessionStorage.getItem('puppypay_notif_asked') === '1') return;
+      sessionStorage.setItem('puppypay_notif_asked', '1');
+      setTimeout(function () {
+        if (Notification.permission !== 'default') return;
+        Notification.requestPermission().then(function (perm) {
+          if (perm === 'granted') {
+            try { new Notification('PuppyPay', { body: 'Notifications enabled. You will get bonuses & updates.' }); } catch (_) {}
+            if (typeof showToast === 'function') showToast('Notifications enabled!', 'success');
+          }
+          if (typeof updateNotifPermissionUI === 'function') updateNotifPermissionUI();
+        }).catch(function () {});
+      }, 1500);
+    } catch (_) {}
+  }
+
+  function runFixes() {
+    fixAvatars();
+    autoAskNotif();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(runFixes, 600); });
+  } else {
+    setTimeout(runFixes, 600);
+  }
+
+  document.addEventListener('click', function (e) {
+    var item = e.target.closest && e.target.closest('.nav-item');
+    if (item && item.dataset && item.dataset.view === 'mine') {
+      setTimeout(fixAvatars, 100);
+    }
+  }, true);
+})();
