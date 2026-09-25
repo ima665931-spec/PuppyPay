@@ -87,7 +87,7 @@
     if (!view) return false;
     const content = view.querySelector('.page-content');
     if (!content) return false;
-    if (content.dataset.sellUi === '1') return true;
+    if (content.dataset.sellUi === '2') return true;
 
     content.innerHTML = `
       <div class="sell-step active" id="sellStepWelcome">
@@ -136,7 +136,7 @@
         <div id="sellFeedback"></div>
       </div>
     `;
-    content.dataset.sellUi = '1';
+    content.dataset.sellUi = '2';
 
     const nameEl = document.getElementById('sellNameInput');
     const existing = getStoredName();
@@ -347,7 +347,6 @@
     if (rail) { rail.classList.remove('show'); rail.style.opacity = '0'; }
   }
 
-  /* Full 360° spin back to original position, then unlock for next try */
   function spinBack(card, rail, onDone) {
     if (rail) { rail.classList.remove('show'); rail.style.opacity = '0'; }
     var m = (card.style.transform || '').match(/translateX\(([^)]+)\)/);
