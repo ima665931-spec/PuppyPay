@@ -1,11 +1,17 @@
 /* PuppyPay Mine - fixed order: functions first, then migrate, then bind */
 (function () {
-  const DEFAULT_AVATAR = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%3E%3Ccircle%20fill%3D%22%231e3a8a%22%20cx%3D%2264%22%20cy%3D%2264%22%20r%3D%2264%22/%3E%3Cellipse%20cx%3D%2264%22%20cy%3D%2250%22%20rx%3D%2245%22%20ry%3D%2214%22%20fill%3D%22%23fbbf24%22/%3E%3Crect%20x%3D%2219%22%20y%3D%2246%22%20width%3D%2290%22%20height%3D%228%22%20rx%3D%222%22%20fill%3D%22%23dc2626%22/%3E%3Ccircle%20fill%3D%22%23fde68a%22%20cx%3D%2264%22%20cy%3D%2278%22%20r%3D%2224%22/%3E%3C/svg%3E';
+  const DEFAULT_AVATAR = 'assets/default-avatar.jpg';
 
   function getAvatarSrc() {
     try {
       const c = localStorage.getItem('puppypay_avatar');
-      if (c) return c;
+      // Skip empty / broken / old blob SVG default
+      if (c && c.length > 40 && !c.includes('ellipse%20cx%3D%2264') && !c.includes('ellipse cx="64"')) {
+        return c;
+      }
+      if (c) {
+        try { localStorage.removeItem('puppypay_avatar'); } catch (_) {}
+      }
     } catch (_) {}
     return DEFAULT_AVATAR;
   }
@@ -256,7 +262,7 @@
           <button type="button" class="avatar-cam-btn" id="avatarEditBtn" aria-label="Change photo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           </button>
-          <input type="file" id="avatarFileInput" accept="image/*" capture="environment" hidden>
+          <input type="file" id="avatarFileInput" accept="image/*" hidden>
         </div>
         <div class="profile-info">
           <h3 id="profileName">User</h3>
@@ -363,6 +369,9 @@
     el.addEventListener(evt, fn);
   }
 
+  window.applyAvatars = applyAvatars;
+  window.openAvatarPicker = openAvatarPicker;
+
   function initMine() {
     injectMineUI();
 
@@ -380,55 +389,22 @@
       if (f) handleAvatarFile(f);
       e.target.value = '';
     });
-
     bindOnce(document.getElementById('copyUserIdBtn'), 'click', function (e) {
       e.preventDefault();
       e.stopPropagation();
       copyUserId();
     });
-
     bindOnce(document.getElementById('menuDepositHistory'), 'click', function () {
       window.__historyKind = 'deposit';
-      const h = document.querySelector('#historyView h2');
-      if (h) h.textContent = 'Deposit History';
       showView('history');
-      loadFilteredHistory('deposit');
     });
     bindOnce(document.getElementById('menuWithdrawHistory'), 'click', function () {
       window.__historyKind = 'withdraw';
-      const h = document.querySelector('#historyView h2');
-      if (h) h.textContent = 'Withdraw History';
       showView('history');
-      loadFilteredHistory('withdraw');
     });
-    bindOnce(document.getElementById('menuWithdraw'), 'click', function () {
-      showView('withdraw');
-    });
-    bindOnce(document.getElementById('menuBonus'), 'click', function () {
-      showView('bonus');
-      loadBonusStatus();
-    });
-    bindOnce(document.getElementById('claimBonusBtn'), 'click', function () {
-      claimDailyBonus();
-    });
-    bindOnce(document.getElementById('menuNotifications'), 'click', function () {
-      showView('notifications');
-      updateNotifPermissionUI();
-      renderNotifications();
-    });
-    bindOnce(document.getElementById('allowNotifBtn'), 'click', function () {
-      requestNotifPermission();
-    });
-    bindOnce(document.getElementById('laterNotifBtn'), 'click', function () {
-      const b = document.getElementById('notifPermissionBox');
-      if (b) b.style.display = 'none';
-    });
-    bindOnce(document.getElementById('neverNotifBtn'), 'click', function () {
-      localStorage.setItem(NOTIF_NEVER_KEY, '1');
-      const b = document.getElementById('notifPermissionBox');
-      if (b) b.style.display = 'none';
-      showToast("Won't ask again");
-    });
+    bindOnce(document.getElementById('menuWithdraw'), 'click', function () { showView('withdraw'); });
+    bindOnce(document.getElementById('menuBonus'), 'click', function () { showView('bonus'); });
+    bindOnce(document.getElementById('menuNotifications'), 'click', function () { showView('notifications'); });
     bindOnce(document.getElementById('menuSupport'), 'click', function () {
       window.open('https://t.me/PuppyPayOfficialSupport', '_blank');
     });
@@ -439,38 +415,40 @@
       localStorage.removeItem('puppypay_token');
       localStorage.removeItem('puppypay_user');
       window.__dashboard = null;
+      if (typeof stopOrdersAutoRefresh === 'function') stopOrdersAutoRefresh();
       showView('login');
       showToast('Logged out');
     });
-
-    document.querySelectorAll('#bonusView [data-back], #notificationsView [data-back]').forEach(function (btn) {
-      bindOnce(btn, 'click', function () {
-        showView(btn.getAttribute('data-back') || 'mine');
-      });
+    bindOnce(document.getElementById('claimBonusBtn'), 'click', claimDailyBonus);
+    bindOnce(document.getElementById('allowNotifBtn'), 'click', requestNotifPermission);
+    bindOnce(document.getElementById('laterNotifBtn'), 'click', function () {
+      const box = document.getElementById('notifPermissionBox');
+      if (box) box.style.display = 'none';
+    });
+    bindOnce(document.getElementById('neverNotifBtn'), 'click', function () {
+      localStorage.setItem(NOTIF_NEVER_KEY, '1');
+      const box = document.getElementById('notifPermissionBox');
+      if (box) box.style.display = 'none';
     });
 
     applyAvatars();
     if (typeof populateUserUI === 'function') populateUserUI();
   }
 
-  window.applyAvatars = applyAvatars;
-  window.pushLocalNotification = pushLocalNotification;
   window.loadFilteredHistory = loadFilteredHistory;
   window.loadBonusStatus = loadBonusStatus;
-  window.updateNotifPermissionUI = updateNotifPermissionUI;
   window.renderNotifications = renderNotifications;
-  window.initMine = initMine;
+  window.updateNotifPermissionUI = updateNotifPermissionUI;
+  window.pushLocalNotification = pushLocalNotification;
 
-  function boot() {
-    try { initMine(); } catch (err) { console.error('initMine', err); }
-  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(initMine, 50); });
   } else {
-    setTimeout(boot, 0);
+    setTimeout(initMine, 50);
   }
-  document.getElementById('bottomNav')?.addEventListener('click', function (e) {
-    const item = e.target.closest('.nav-item');
+
+  document.addEventListener('click', function (e) {
+    const item = e.target.closest && e.target.closest('.nav-item');
     if (item && item.dataset.view === 'mine') {
       setTimeout(function () {
         applyAvatars();
