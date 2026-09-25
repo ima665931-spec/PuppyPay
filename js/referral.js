@@ -432,12 +432,29 @@
     if (!el || el._autoScroll) return;
     el._autoScroll = true;
     let idx = 0;
+    el.addEventListener('touchstart', function () { el._userScrolling = true; }, { passive: true });
+    el.addEventListener('touchend', function () {
+      setTimeout(function () { el._userScrolling = false; }, 2500);
+    }, { passive: true });
+    el.addEventListener('mousedown', function () { el._userScrolling = true; });
+    el.addEventListener('mouseup', function () {
+      setTimeout(function () { el._userScrolling = false; }, 2500);
+    });
     setInterval(function () {
+      if (el._userScrolling) return;
+      const team = document.getElementById('teamView');
+      if (team && (getComputedStyle(team).display === 'none' || team.classList.contains('hidden'))) return;
       const cards = el.querySelectorAll('.ref-banner');
       if (!cards.length) return;
       idx = (idx + 1) % cards.length;
-      try { cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' }); }
-      catch (_) { el.scrollLeft = cards[idx].offsetLeft - 8; }
+      // Horizontal-only — never scrollIntoView (jumps page to top)
+      const card = cards[idx];
+      const left = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2;
+      try {
+        el.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+      } catch (_) {
+        el.scrollLeft = Math.max(0, card.offsetLeft - 8);
+      }
     }, 3500);
   }
 
