@@ -360,3 +360,19 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     }
   }, true);
 })();
+
+/* Auto-load Referral UI */
+(function loadReferralExtras() {
+  if (!document.querySelector('link[href*="referral-ui.css"]')) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = 'css/referral-ui.css';
+    document.head.appendChild(l);
+  }
+  if (!document.querySelector('script[src*="referral.js"]')) {
+    const s = document.createElement('script');
+    s.src = 'js/referral.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+})();
