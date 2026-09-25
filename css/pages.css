@@ -305,8 +305,7 @@ html:not(.has-token) .support-fab {
 }
 .carousel-slide img {
   width: 100%;
-  height: auto;
-  max-height: 148px;
+  height: 140px;
   display: block;
   object-fit: cover;
   object-position: center center;
@@ -400,7 +399,6 @@ html:not(.has-token) .support-fab {
   font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
-  margin-bottom: 4px;
 }
 .summary-chip .value {
   font-size: 14px;
