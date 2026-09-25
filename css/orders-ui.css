@@ -34,7 +34,6 @@
 }
 .order-card-top .order-amount { color: #b91c1c; }
 
-/* Full-screen pay overlay */
 .pay-sheet-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -82,7 +81,6 @@
 .pay-preview.show { display: block; margin: 10px auto 0; }
 .btn-submit-pay:disabled { opacity: .45; cursor: not-allowed; }
 
-/* ===== Pro History Cards — tinted by category ===== */
 #historyList { display: flex; flex-direction: column; gap: 10px; }
 .history-card {
   background: linear-gradient(160deg, #ffffff 0%, #eff6ff 45%, #dbeafe 100%);
@@ -140,7 +138,6 @@
 }
 .history-time { margin-left: auto; }
 
-/* Deposit = clearly green */
 .history-card.dep {
   background: linear-gradient(160deg, #ffffff 0%, #ecfdf5 40%, #d1fae5 100%);
   border-color: #6ee7b7;
@@ -150,8 +147,6 @@
     0 2px 5px rgba(15, 23, 42, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
-
-/* Withdraw = clearly red */
 .history-card.wd {
   background: linear-gradient(160deg, #ffffff 0%, #fef2f2 40%, #fee2e2 100%);
   border-color: #fca5a5;
@@ -162,7 +157,6 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* ===== Orders P0+P1 — summary, tabs, chips ===== */
 .orders-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -351,7 +345,6 @@
 }
 .my-order-time { margin-left: auto; }
 
-/* ===== P1 — status timeline on My Orders ===== */
 .my-order-timeline {
   display: flex;
   align-items: center;
@@ -411,3 +404,104 @@
   border-color: #dc2626;
 }
 .my-tl-step.fail .my-tl-label { color: #dc2626; }
+
+/* ===== How to Earn guide ===== */
+#ordersView .page-header {
+  justify-content: space-between;
+}
+.how-earn-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  border: 1.5px solid #93c5fd;
+  background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+  color: #1e40af;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  letter-spacing: .01em;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  white-space: nowrap;
+}
+.how-earn-btn:active { background: #dbeafe; }
+
+.how-earn-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.how-earn-sheet {
+  width: 100%;
+  max-width: 430px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.2);
+}
+.how-earn-sheet h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+.how-earn-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+.how-earn-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.how-earn-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.how-earn-step-body {
+  flex: 1;
+  min-width: 0;
+}
+.how-earn-step-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+.how-earn-step-text {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.45;
+}
+.how-earn-tip {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #1e40af;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.how-earn-close {
+  margin-top: 16px;
+  width: 100%;
+}
