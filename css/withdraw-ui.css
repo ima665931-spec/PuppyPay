@@ -1,4 +1,4 @@
-/* PuppyPay — Selling window — matches app light theme */
+/* PuppyPay — Selling window — light theme + swipe cards */
 
 #withdrawView {
   background: var(--bg, #f0f4f8) !important;
@@ -23,10 +23,7 @@
 .sell-step { display: none; }
 .sell-step.active { display: block; }
 
-/* Welcome */
-.sell-welcome {
-  padding: 8px 0 4px;
-}
+.sell-welcome { padding: 8px 0 4px; }
 .sell-welcome h3 {
   color: var(--text);
   font-size: 18px;
@@ -79,7 +76,6 @@
 }
 .sell-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Check */
 .sell-check {
   text-align: center;
   padding: 48px 16px;
@@ -105,7 +101,6 @@
   margin: 0;
 }
 
-/* Info cards — glass like app */
 .sell-info-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -152,7 +147,13 @@
   color: var(--text);
   font-size: 13px;
   font-weight: 800;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
+}
+.sell-swipe-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  font-weight: 500;
 }
 
 .sell-empty {
@@ -165,34 +166,84 @@
   text-align: center;
 }
 
-/* UPI cards */
-.sell-upi-list { display: flex; flex-direction: column; gap: 10px; }
+.sell-upi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+.sell-upi-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.sell-upi-rail {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 20px;
+  background: linear-gradient(90deg, #dcfce7, #16a34a);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+  z-index: 0;
+}
+.sell-upi-rail.show { opacity: 1; }
+
 .sell-upi-card {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px;
   border-radius: 16px;
   border: 1.5px solid var(--border);
   background: #fff;
-  min-height: 64px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+  min-height: 68px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.05);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+  transition: box-shadow 0.15s;
 }
+.sell-upi-card:active { cursor: grabbing; }
+.sell-upi-card.dragging { box-shadow: 0 8px 24px rgba(15,23,42,0.12); }
+.sell-upi-card.fly-out {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  opacity: 0;
+}
+.sell-upi-card.spin-back {
+  transition: transform 0.55s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
 .sell-upi-card.phonepe {
-  border-color: rgba(95,37,159,0.25);
+  border-color: rgba(95,37,159,0.22);
   background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
 }
 .sell-upi-card.gpay {
-  border-color: rgba(26,115,232,0.25);
+  border-color: rgba(26,115,232,0.22);
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
 }
 .sell-upi-card.paytm {
-  border-color: rgba(0,186,242,0.3);
+  border-color: rgba(0,186,242,0.28);
   background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
 }
 .sell-upi-card.bhim {
-  border-color: rgba(234,88,12,0.25);
+  border-color: rgba(234,88,12,0.22);
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+}
+.sell-upi-card.amazon {
+  border-color: rgba(255,153,0,0.3);
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
 }
 .sell-upi-card.generic {
   border-color: var(--border);
@@ -200,18 +251,20 @@
 }
 
 .sell-upi-logo {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.08);
 }
 .sell-upi-logo svg {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: block;
 }
 .sell-upi-body { flex: 1; min-width: 0; }
@@ -231,35 +284,12 @@
 .sell-upi-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
 }
-.sell-toggle {
-  width: 44px;
-  height: 26px;
-  border-radius: 999px;
-  background: #e2e8f0;
-  border: none;
-  padding: 2px;
-  cursor: pointer;
-  position: relative;
-}
-.sell-toggle.on { background: #16a34a; }
-.sell-toggle span {
-  display: block;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  transition: transform 0.15s;
-}
-.sell-toggle.on span { transform: translateX(18px); }
-.sell-toggle:disabled { opacity: 0.45; cursor: not-allowed; }
-
 .sell-upi-del {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 8px;
   background: transparent;
@@ -277,7 +307,7 @@
 .sell-add-upi {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 .sell-add-upi input {
   flex: 1;
