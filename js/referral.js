@@ -69,15 +69,14 @@
         <div class="ref-stat green"><div class="lbl">This Month</div><div class="val" id="refMonth">₹0</div></div>
       </div>
 
-      <div class="ref-rules">
-        <h4>How you earn</h4>
-        <div class="ref-rule-item"><span class="ref-rule-badge">₹27</span><span>Friend completes <b>first order</b> → you get flat ₹27</span></div>
-        <div class="ref-rule-item"><span class="ref-rule-badge">4.9%+₹4</span><span><b>Every order</b> after that → standard commission</span></div>
-        <div class="ref-rule-item"><span class="ref-rule-badge">10%</span><span>Friend’s <b>first order only</b> → they get 10% extra profit on that order</span></div>
-      </div>
-
-      <div class="ref-calc" id="refCalcExample">
-        Example: Friend’s first order ₹500 → they earn ~₹50 (10%). You get <strong>₹27</strong>. Later orders: you earn 4.9% + ₹4 each.
+      <div class="ref-info-banner-wrap" id="refInfoBannerWrap">
+        <img class="ref-info-banner" id="refInfoBannerImg" src="assets/referral-info-banner.jpg" alt="How referral works" style="display:none;">
+        <div class="ref-rules" id="refRulesFallback">
+          <h4>How you earn</h4>
+          <div class="ref-rule-item"><span class="ref-rule-badge">₹27</span><span>Friend completes <b>first order</b> → you get flat ₹27</span></div>
+          <div class="ref-rule-item"><span class="ref-rule-badge">4.9%+₹4</span><span><b>Every order</b> after that → standard commission</span></div>
+          <div class="ref-rule-item"><span class="ref-rule-badge">10%</span><span>Friend’s <b>first order only</b> → they get 10% extra profit on that order</span></div>
+        </div>
       </div>
 
       <div class="ref-section-title">
@@ -93,6 +92,16 @@
     `;
 
     bindReferralUI();
+    var img = document.getElementById('refInfoBannerImg');
+    var fb = document.getElementById('refRulesFallback');
+    if (img) {
+      img.onload = function () { img.style.display = 'block'; if (fb) fb.style.display = 'none'; };
+      img.onerror = function () { img.style.display = 'none'; if (fb) fb.style.display = 'block'; };
+      if (img.complete && img.naturalWidth > 0) {
+        img.style.display = 'block';
+        if (fb) fb.style.display = 'none';
+      }
+    }
   }
 
   function bindReferralUI() {
@@ -218,7 +227,7 @@
   }
 
   function escapeHtml(s) {
-    return s.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+    return String(s).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
   }
 
   async function loadReferrals() {
@@ -254,8 +263,26 @@
   window.loadReferrals = loadReferrals;
   window.injectReferralUI = injectReferralUI;
 
+  function startBannerAutoScroll() {
+    const el = document.querySelector('.ref-banner-carousel');
+    if (!el || el._autoScroll) return;
+    el._autoScroll = true;
+    let idx = 0;
+    setInterval(function () {
+      const cards = el.querySelectorAll('.ref-banner');
+      if (!cards.length) return;
+      idx = (idx + 1) % cards.length;
+      try {
+        cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      } catch (_) {
+        el.scrollLeft = cards[idx].offsetLeft - 8;
+      }
+    }, 3500);
+  }
+
   function boot() {
     injectReferralUI();
+    setTimeout(startBannerAutoScroll, 400);
   }
 
   if (document.readyState === 'loading') {
@@ -270,6 +297,7 @@
       setTimeout(function () {
         injectReferralUI();
         loadReferrals();
+        setTimeout(startBannerAutoScroll, 400);
       }, 30);
     }
   });
