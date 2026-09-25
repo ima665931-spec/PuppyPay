@@ -100,6 +100,36 @@
 }
 .ref-share-row .btn { flex: 1; min-width: 120px; }
 
+.ref-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 14px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+.ref-qr-img {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  background: #f8fafc;
+  object-fit: contain;
+}
+.ref-qr-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.ref-qr-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 .ref-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -290,4 +320,38 @@
   border-radius: 16px;
   object-fit: cover;
   max-height: 200px;
+}
+
+.ref-sticky-invite {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  bottom: 70px;
+  width: min(100%, 440px);
+  padding: 0 16px 10px;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.ref-sticky-invite.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.ref-sticky-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.35);
+  pointer-events: auto;
+}
+.ref-bottom-spacer {
+  height: 64px;
 }
