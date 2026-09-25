@@ -646,7 +646,6 @@ body:has(#homeView.active) .support-fab {
   font-family: var(--font-mono);
   font-size: 17px;
   letter-spacing: .1em;
-  font-weight: 600;
   position: relative;
   z-index: 1;
 }
@@ -713,4 +712,29 @@ body:has(#homeView.active) .support-fab {
 @keyframes dotPulse {
   0%, 100% { opacity: .35; }
   50% { opacity: 1; background: var(--accent); }
+}
+
+/* ===== Fix: no solid wall behind bottom nav on Orders / Mine / Team ===== */
+#ordersView,
+#mineView,
+#teamView {
+  background: transparent;
+}
+#ordersView > .page-content,
+#mineView > .page-content,
+#teamView > .page-content {
+  flex: 1 1 auto !important;
+  flex-shrink: 1 !important;
+  min-height: 0 !important;
+  background: transparent;
+  padding-bottom: 8px;
+}
+#ordersView > .nav-spacer,
+#mineView > .nav-spacer,
+#teamView > .nav-spacer {
+  height: 88px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  flex-shrink: 0 !important;
 }
