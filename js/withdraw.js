@@ -18,9 +18,9 @@
   function detectUpiBrand(upi) {
     const h = String(upi || '').toLowerCase().split('@')[1] || '';
     if (['ybl', 'ibl', 'axl', 'phonepe'].some((x) => h.includes(x))) return 'phonepe';
-    if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'google'].some((x) => h.includes(x))) return 'gpay';
+    if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'okindus', 'google'].some((x) => h.includes(x))) return 'gpay';
     if (h.includes('paytm') || h === 'ptys' || h === 'paytm') return 'paytm';
-    if (h.includes('upi') || h.includes('apl') || h.includes('axisbank')) return 'bhim';
+    if (h.includes('upi') || h.includes('apl') || h.includes('axisbank') || h.includes('boi') || h.includes('sbi')) return 'bhim';
     return 'generic';
   }
 
@@ -32,18 +32,36 @@
     return 'UPI';
   }
 
-  /* Minimal flat SVG marks — no cartoon fill */
+  /* Filled brand badge SVGs — always visible on light theme */
   function brandSvg(b) {
     if (b === 'phonepe') {
-      return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 12.5l2 2 4-4"/></svg>';
+      return '<svg viewBox="0 0 40 40" width="40" height="40" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="40" height="40" rx="12" fill="#5f259f"/>' +
+        '<text x="20" y="26" text-anchor="middle" fill="#fff" font-size="13" font-weight="800" font-family="system-ui,sans-serif">Pe</text>' +
+        '</svg>';
     }
     if (b === 'gpay') {
-      return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>';
+      return '<svg viewBox="0 0 40 40" width="40" height="40" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="40" height="40" rx="12" fill="#1a73e8"/>' +
+        '<text x="20" y="26" text-anchor="middle" fill="#fff" font-size="14" font-weight="800" font-family="system-ui,sans-serif">G</text>' +
+        '</svg>';
     }
     if (b === 'paytm') {
-      return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 12h10M12 9v6"/></svg>';
+      return '<svg viewBox="0 0 40 40" width="40" height="40" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="40" height="40" rx="12" fill="#00baf2"/>' +
+        '<text x="20" y="26" text-anchor="middle" fill="#fff" font-size="11" font-weight="800" font-family="system-ui,sans-serif">Pay</text>' +
+        '</svg>';
     }
-    return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>';
+    if (b === 'bhim') {
+      return '<svg viewBox="0 0 40 40" width="40" height="40" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="40" height="40" rx="12" fill="#ea580c"/>' +
+        '<text x="20" y="26" text-anchor="middle" fill="#fff" font-size="10" font-weight="800" font-family="system-ui,sans-serif">BHIM</text>' +
+        '</svg>';
+    }
+    return '<svg viewBox="0 0 40 40" width="40" height="40" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="40" height="40" rx="12" fill="#64748b"/>' +
+      '<text x="20" y="26" text-anchor="middle" fill="#fff" font-size="11" font-weight="800" font-family="system-ui,sans-serif">UPI</text>' +
+      '</svg>';
   }
 
   function getStoredName() {
@@ -136,7 +154,6 @@
     document.getElementById('sellUpiInput')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') onAddUpi();
     });
-    // Suggestions only when focusing the input
     document.getElementById('sellUpiInput')?.addEventListener('focus', () => {
       const box = document.getElementById('sellSuggest');
       if (box) {
