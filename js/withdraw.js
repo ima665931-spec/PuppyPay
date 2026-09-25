@@ -39,7 +39,6 @@
     return 'UPI';
   }
 
-  /* Logos from assets/ — unknown handle → upi-default */
   const UPI_LOGO = {
     phonepe: 'assets/upi-phonepe.png',
     gpay: 'assets/upi-gpay.png',
@@ -274,13 +273,18 @@
     const wrap = card.closest('.sell-upi-wrap');
     const rail = wrap?.querySelector('.sell-upi-rail');
 
+    function unlock() {
+      locked = false;
+      sellState.submitting = false;
+    }
+
     function onStart(clientX, clientY) {
       if (sellState.submitting || locked) return;
       active = true;
       startX = clientX; startY = clientY; dx = 0;
       card.classList.add('dragging');
-      card.classList.remove('spin-back', 'fly-out');
       card.style.transition = 'none';
+      card.style.transform = 'translateX(0) rotate(0deg)';
     }
     function onMove(clientX, clientY) {
       if (!active) return;
@@ -292,7 +296,7 @@
         return;
       }
       dx = Math.max(0, mx);
-      card.style.transform = 'translateX(' + dx + 'px)';
+      card.style.transform = 'translateX(' + dx + 'px) rotate(0deg)';
       if (rail) {
         rail.classList.toggle('show', dx > 24);
         rail.style.opacity = String(Math.min(1, dx / SWIPE_THRESHOLD));
@@ -304,7 +308,7 @@
       card.classList.remove('dragging');
       if (dx >= SWIPE_THRESHOLD) {
         locked = true;
-        attemptSell(card, wrap, rail);
+        attemptSell(card, wrap, rail, unlock);
       } else {
         resetCard(card, rail);
       }
@@ -339,70 +343,75 @@
 
   function resetCard(card, rail) {
     card.style.transition = 'transform 0.25s ease';
-    card.style.transform = 'translateX(0)';
+    card.style.transform = 'translateX(0) rotate(0deg)';
     if (rail) { rail.classList.remove('show'); rail.style.opacity = '0'; }
   }
 
-  function spinBack(card, rail) {
-    card.classList.add('spin-back');
-    card.style.transition = 'transform 0.55s cubic-bezier(0.34, 1.2, 0.64, 1)';
-    card.style.transform = 'translateX(0) rotate(360deg)';
+  /* Full 360° spin back to original position, then unlock for next try */
+  function spinBack(card, rail, onDone) {
     if (rail) { rail.classList.remove('show'); rail.style.opacity = '0'; }
-    setTimeout(() => {
+    var m = (card.style.transform || '').match(/translateX\(([^)]+)\)/);
+    var fromX = m ? m[1] : '0px';
+    card.style.transition = 'none';
+    card.style.transform = 'translateX(' + fromX + ') rotate(0deg)';
+    void card.offsetWidth;
+    card.style.transition = 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)';
+    card.style.transform = 'translateX(0px) rotate(360deg)';
+    setTimeout(function () {
       card.style.transition = 'none';
-      card.style.transform = 'translateX(0) rotate(0deg)';
-      card.classList.remove('spin-back');
+      card.style.transform = 'translateX(0px) rotate(0deg)';
       void card.offsetWidth;
       card.style.transition = '';
-    }, 560);
+      if (typeof onDone === 'function') onDone();
+    }, 720);
   }
 
   function flyOut(card, wrap) {
-    card.classList.add('fly-out');
     card.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
-    card.style.transform = 'translateX(120%)';
+    card.style.transform = 'translateX(120%) rotate(0deg)';
     card.style.opacity = '0';
-    setTimeout(() => {
+    setTimeout(function () {
       if (wrap && wrap.parentNode) wrap.remove();
-      const list = document.getElementById('sellUpiList');
+      var list = document.getElementById('sellUpiList');
       if (list && !list.querySelector('.sell-upi-wrap')) {
         list.innerHTML = '<div class="sell-empty">No UPI linked yet. Add one below.</div>';
       }
     }, 360);
   }
 
-  async function attemptSell(card, wrap, rail) {
-    const upi = card.getAttribute('data-card-upi');
-    const fb = document.getElementById('sellFeedback');
+  async function attemptSell(card, wrap, rail, unlock) {
+    var upi = card.getAttribute('data-card-upi');
+    var fb = document.getElementById('sellFeedback');
     if (fb) fb.innerHTML = '';
     sellState.submitting = true;
     try {
-      const { ok, data } = await walletApiCall('/eligibility', 'GET');
-      if (!ok || !data?.success || !data.eligible || Number(data.maxAmount) < 100) {
+      var res1 = await walletApiCall('/eligibility', 'GET');
+      var ok = res1.ok, data = res1.data;
+      if (!ok || !data || !data.success || !data.eligible || Number(data.maxAmount) < 100) {
         sellState.eligible = false;
-        sellState.message = data?.message || 'Not eligible';
-        sellState.maxAmount = Number(data?.maxAmount) || 0;
-        sellState.balance = Number(data?.balance) || 0;
+        sellState.message = (data && data.message) || 'Not eligible';
+        sellState.maxAmount = Number(data && data.maxAmount) || 0;
+        sellState.balance = Number(data && data.balance) || 0;
         paintMainKeepList();
-        spinBack(card, rail);
+        spinBack(card, rail, unlock);
         if (fb) fb.innerHTML = '<div class="sell-error">' + (sellState.message || 'Eligibility failed — card returned.') + '</div>';
         showToast(sellState.message || 'Not eligible', 'error');
-        sellState.submitting = false;
         return;
       }
       sellState.eligible = true;
       sellState.maxAmount = Number(data.maxAmount) || 0;
       sellState.balance = Number(data.balance) || 0;
-      const payload = {
+      var payload = {
         amount: sellState.maxAmount,
         destination: upi,
         name: sellState.name || getStoredName() || undefined,
       };
-      const { ok: ok2, data: data2 } = await walletApiCall('/withdraw', 'POST', payload);
-      sellState.submitting = false;
-      if (ok2 && data2?.success) {
+      var res2 = await walletApiCall('/withdraw', 'POST', payload);
+      var ok2 = res2.ok, data2 = res2.data;
+      if (ok2 && data2 && data2.success) {
+        sellState.submitting = false;
         flyOut(card, wrap);
-        sellState.savedUpiIds = (sellState.savedUpiIds || []).filter((x) => x !== upi);
+        sellState.savedUpiIds = (sellState.savedUpiIds || []).filter(function (x) { return x !== upi; });
         if (fb) {
           fb.innerHTML = '<div class="sell-success">Request of ' + formatINR(sellState.maxAmount) +
             ' submitted. Amount held until admin reviews.</div>';
@@ -411,14 +420,13 @@
         if (typeof loadDashboard === 'function') loadDashboard();
         setTimeout(runEligibilityCheck, 700);
       } else {
-        const msg = data2?.message || data2?.error?.message || 'Request failed';
-        spinBack(card, rail);
+        var msg = (data2 && (data2.message || (data2.error && data2.error.message))) || 'Request failed';
+        spinBack(card, rail, unlock);
         if (fb) fb.innerHTML = '<div class="sell-error">' + msg + '</div>';
         showToast(msg, 'error');
       }
     } catch (e) {
-      sellState.submitting = false;
-      spinBack(card, rail);
+      spinBack(card, rail, unlock);
       showToast('Network error', 'error');
     }
   }
