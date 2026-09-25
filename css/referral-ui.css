@@ -1,0 +1,279 @@
+/* Premium Referral / Team section */
+.ref-banner-carousel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 0 8px;
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+.ref-banner-carousel::-webkit-scrollbar { display: none; }
+.ref-banner {
+  flex: 0 0 92%;
+  scroll-snap-align: start;
+  border-radius: 16px;
+  padding: 18px 16px;
+  min-height: 110px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.18);
+}
+.ref-banner::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+}
+.ref-banner h3 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  position: relative;
+  z-index: 1;
+}
+.ref-banner p {
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  opacity: 0.95;
+  position: relative;
+  z-index: 1;
+}
+.ref-banner.b1 { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 55%, #60a5fa 100%); }
+.ref-banner.b2 { background: linear-gradient(135deg, #065f46 0%, #10b981 55%, #34d399 100%); }
+.ref-banner.b3 { background: linear-gradient(135deg, #9a3412 0%, #f59e0b 55%, #fbbf24 100%); color: #1c1917; }
+
+.ref-hero {
+  background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 18px;
+  padding: 18px 16px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.ref-hero-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.ref-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ref-code {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #1e3a8a;
+  font-family: ui-monospace, monospace;
+}
+.ref-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.ref-icon-btn:active { transform: scale(0.95); background: #dbeafe; }
+.ref-share-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ref-share-row .btn { flex: 1; min-width: 120px; }
+
+.ref-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ref-stat {
+  background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(239,246,255,0.88));
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.ref-stat.green {
+  background: linear-gradient(145deg, #ffffff, #ecfdf5);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+.ref-stat .lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ref-stat .val {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e3a8a;
+}
+.ref-stat.green .val { color: #059669; }
+
+.ref-rules {
+  background: linear-gradient(145deg, #fffbeb, #fef3c7);
+  border: 1.5px solid #fbbf24;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  margin-bottom: 14px;
+}
+.ref-rules h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #92400e;
+}
+.ref-rule-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #78350f;
+}
+.ref-rule-item:last-child { margin-bottom: 0; }
+.ref-rule-badge {
+  flex-shrink: 0;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-top: 1px;
+}
+
+.ref-calc {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ref-calc strong { color: #059669; }
+
+.ref-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ref-filter {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ref-filter button {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+}
+.ref-filter button.active {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+  color: #fff;
+}
+
+.ref-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff, #f8fafc);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 8px;
+}
+.ref-card-av {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dbeafe, #93c5fd);
+  color: #1e3a8a;
+  font-weight: 800;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ref-card-body { flex: 1; min-width: 0; }
+.ref-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ref-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.ref-card-right { text-align: right; flex-shrink: 0; }
+.ref-card-earn {
+  font-size: 13px;
+  font-weight: 800;
+  color: #059669;
+}
+.ref-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-top: 3px;
+}
+.ref-badge.active { background: #ecfdf5; color: #059669; }
+.ref-badge.joined { background: #eff6ff; color: #2563eb; }
+.ref-badge.pending { background: #fef3c7; color: #b45309; }
+
+.order-first-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+.order-profit-extra {
+  font-size: 10px;
+  color: #059669;
+  font-weight: 600;
+  margin-left: 4px;
+}
