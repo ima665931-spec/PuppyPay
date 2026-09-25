@@ -1,4 +1,4 @@
-/* PuppyPay — Selling window: swipe-to-sell + real UPI brand icons */
+/* PuppyPay — Selling window: swipe-to-sell + asset UPI logos */
 (function () {
   const NAME_KEY = 'puppypay_sell_name';
   const SWIPE_THRESHOLD = 110;
@@ -11,7 +11,6 @@
     firstOrderDone: false,
     message: '',
     savedUpiIds: [],
-    suggestedUpiIds: [],
     submitting: false,
   };
 
@@ -34,53 +33,20 @@
     return 'UPI';
   }
 
-  function brandSvg(b) {
-    if (b === 'phonepe') {
-      return '<svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="48" height="48" rx="12" fill="#5f259f"/>' +
-        '<path d="M16 30V18h5.2c2.9 0 4.7 1.5 4.7 3.9 0 1.7-.9 3-2.4 3.5L27 30h-3.2l-2.9-4.1h-1.7V30H16zm3.2-6.5h1.8c1.2 0 1.9-.6 1.9-1.6s-.7-1.5-1.9-1.5h-1.8v3.1z" fill="#fff"/>' +
-        '<circle cx="33.5" cy="24" r="5.2" fill="none" stroke="#fff" stroke-width="2"/>' +
-        '<path d="M31.2 24h4.6M33.5 21.7v4.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>' +
-        '</svg>';
-    }
-    if (b === 'gpay') {
-      return '<svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="48" height="48" rx="12" fill="#fff"/>' +
-        '<path d="M24 12c-6.6 0-12 5.4-12 12s5.4 12 12 12c6 0 11-4.4 11.8-10.1H24v-3.8h14.6C37.5 16.3 31.4 12 24 12z" fill="#4285F4"/>' +
-        '<path d="M24 36c3.2 0 6.1-1.2 8.3-3.1l-3.9-3c-1.1.7-2.5 1.2-4.4 1.2-3.4 0-6.2-2.3-7.2-5.4H12.6v3.2C14.8 33.3 19.1 36 24 36z" fill="#34A853"/>' +
-        '<path d="M16.8 25.7c-.3-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5v-3.2H12.6c-.8 1.6-1.3 3.4-1.3 5.2s.5 3.6 1.3 5.2l4.2-2.2z" fill="#FBBC05"/>' +
-        '<path d="M24 17.1c1.8 0 3.4.6 4.6 1.8l3.5-3.5C29.9 13.4 27.2 12 24 12c-4.9 0-9.2 2.7-11.4 6.7l4.2 3.2c1-3.1 3.8-4.8 7.2-4.8z" fill="#EA4335"/>' +
-        '</svg>';
-    }
-    if (b === 'paytm') {
-      return '<svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="48" height="48" rx="12" fill="#00baf2"/>' +
-        '<text x="24" y="22" text-anchor="middle" fill="#fff" font-size="11" font-weight="800" font-family="Arial,sans-serif">paytm</text>' +
-        '<path d="M14 28h20M18 28v6M30 28v6" stroke="#002e6e" stroke-width="2.2" stroke-linecap="round"/>' +
-        '</svg>';
-    }
-    if (b === 'amazon') {
-      return '<svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="48" height="48" rx="12" fill="#232f3e"/>' +
-        '<path d="M14 28c4 3.2 10 4.8 15.5 4.8 3.2 0 6.4-.6 9.2-1.8" fill="none" stroke="#ff9900" stroke-width="2.4" stroke-linecap="round"/>' +
-        '<path d="M35 29.5l2.5 1.2-1.5 2.6" fill="none" stroke="#ff9900" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<text x="24" y="22" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Arial,sans-serif">a</text>' +
-        '</svg>';
-    }
-    if (b === 'bhim') {
-      return '<svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="48" height="48" rx="12" fill="#fff"/>' +
-        '<path d="M12 32L20 14h5l-8 18h-5z" fill="#f97316"/>' +
-        '<path d="M22 32L30 14h5l-8 18h-5z" fill="#0ea5e9"/>' +
-        '<path d="M16 28h16" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>' +
-        '</svg>';
-    }
-    return '<svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect width="48" height="48" rx="12" fill="#0f766e"/>' +
-      '<rect x="12" y="16" width="24" height="16" rx="3" fill="none" stroke="#fff" stroke-width="2"/>' +
-      '<path d="M12 22h24" stroke="#fff" stroke-width="2"/>' +
-      '<circle cx="18" cy="28" r="1.5" fill="#5eead4"/>' +
-      '</svg>';
+  /* Logos from assets/ — unknown handle → upi-default */
+  const UPI_LOGO = {
+    phonepe: 'assets/upi-phonepe.png',
+    gpay: 'assets/upi-gpay.png',
+    paytm: 'assets/upi-paytm.png',
+    amazon: 'assets/upi-amazon.png',
+    bhim: 'assets/upi-bhim.png',
+    generic: 'assets/upi-default.png',
+  };
+
+  function brandLogo(b) {
+    const src = UPI_LOGO[b] || UPI_LOGO.generic;
+    return '<img src="' + src + '" alt="" width="44" height="44" ' +
+      'onerror="this.onerror=null;this.src=\'assets/upi-default.png\'">';
   }
 
   function getStoredName() {
@@ -158,7 +124,6 @@
           <input type="text" id="sellUpiInput" placeholder="Add UPI ID (e.g. name@ybl)" autocomplete="off">
           <button type="button" id="sellAddUpiBtn">Add</button>
         </div>
-        <div class="sell-suggest" id="sellSuggest" hidden></div>
 
         <div id="sellFeedback"></div>
       </div>
@@ -173,16 +138,6 @@
     document.getElementById('sellAddUpiBtn')?.addEventListener('click', onAddUpi);
     document.getElementById('sellUpiInput')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') onAddUpi();
-    });
-    document.getElementById('sellUpiInput')?.addEventListener('focus', () => {
-      const box = document.getElementById('sellSuggest');
-      if (box) { box.hidden = false; renderSuggestions(); }
-    });
-    document.getElementById('sellUpiInput')?.addEventListener('blur', () => {
-      setTimeout(() => {
-        const box = document.getElementById('sellSuggest');
-        if (box) box.hidden = true;
-      }, 180);
     });
     return true;
   }
@@ -212,7 +167,6 @@
       sellState.firstOrderDone = !!data.firstOrderDone;
       sellState.message = data.message || '';
       sellState.savedUpiIds = data.savedUpiIds || [];
-      sellState.suggestedUpiIds = data.suggestedUpiIds || [];
       if (data.name && data.name !== 'PuppyPay User' && !sellState.name) {
         sellState.name = data.name;
         setStoredName(data.name);
@@ -284,7 +238,7 @@
         '<div class="sell-upi-wrap" data-upi="' + upi + '">' +
           '<div class="sell-upi-rail"><span>Sell →</span></div>' +
           '<div class="sell-upi-card ' + brand + '" data-card-upi="' + upi + '">' +
-            '<div class="sell-upi-logo">' + brandSvg(brand) + '</div>' +
+            '<div class="sell-upi-logo">' + brandLogo(brand) + '</div>' +
             '<div class="sell-upi-body">' +
               '<div class="sell-upi-id">' + upi + '</div>' +
               '<div class="sell-upi-tag">' + brandLabel(brand) + '</div>' +
@@ -458,23 +412,6 @@
       spinBack(card, rail);
       showToast('Network error', 'error');
     }
-  }
-
-  function renderSuggestions() {
-    const box = document.getElementById('sellSuggest');
-    if (!box) return;
-    const saved = new Set((sellState.savedUpiIds || []).map((x) => x.toLowerCase()));
-    const chips = (sellState.suggestedUpiIds || []).filter((u) => !saved.has(String(u).toLowerCase())).slice(0, 6);
-    if (!chips.length) { box.innerHTML = ''; return; }
-    box.innerHTML = '<div class="sell-suggest-label">Suggestions from your mobile</div>' +
-      chips.map((u) => '<button type="button" class="sell-chip" data-suggest="' + u + '">' + u + '</button>').join('');
-    box.querySelectorAll('[data-suggest]').forEach((el) => {
-      el.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        document.getElementById('sellUpiInput').value = el.getAttribute('data-suggest');
-        onAddUpi();
-      });
-    });
   }
 
   async function onAddUpi() {
