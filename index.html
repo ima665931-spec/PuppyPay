@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/pages.css">
   <link rel="stylesheet" href="css/orders-ui.css">
+  <link rel="stylesheet" href="css/referral-ui.css">
+  <link rel="stylesheet" href="css/mine-ui.css">
   <script>
     (function(){
       try {
@@ -162,7 +164,33 @@
   <div class="view" id="ordersView">
     <div class="page-header"><h2>Orders</h2></div>
     <div class="page-content">
-      <div class="order-filter-bar">
+      <div class="orders-summary" id="ordersSummary">
+        <div class="orders-sum-card">
+          <div class="orders-sum-label">Available</div>
+          <div class="orders-sum-value" id="ordersAvailableCount">—</div>
+        </div>
+        <div class="orders-sum-card">
+          <div class="orders-sum-label">Today's earn</div>
+          <div class="orders-sum-value green" id="ordersTodayEarn">₹0</div>
+        </div>
+        <div class="orders-sum-card" id="ordersFirstBonusCard">
+          <div class="orders-sum-label">First order</div>
+          <div class="orders-sum-value accent" id="ordersFirstBonus">+10%</div>
+        </div>
+      </div>
+
+      <div class="orders-tabs" id="ordersTabs">
+        <button type="button" class="orders-tab active" data-otab="available">Available</button>
+        <button type="button" class="orders-tab" data-otab="mine">My Orders</button>
+      </div>
+
+      <div class="order-chips" id="orderChips">
+        <button type="button" class="order-chip active" data-chip="all">All</button>
+        <button type="button" class="order-chip" data-chip="high">High ₹</button>
+        <button type="button" class="order-chip" data-chip="new">New</button>
+      </div>
+
+      <div class="order-filter-bar" id="orderFilterBar">
         <div class="order-filter-inputs">
           <input type="number" id="orderFilterMin" placeholder="Min ₹" inputmode="numeric" min="0">
           <span class="order-filter-sep">–</span>
@@ -171,8 +199,12 @@
         <button type="button" class="btn btn-primary btn-sm" id="orderFilterApply">Filter</button>
         <button type="button" class="btn btn-secondary btn-sm" id="orderFilterClear">Clear</button>
       </div>
+
       <div id="ordersList">
         <div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div><p>Loading orders...</p></div>
+      </div>
+      <div id="myOrdersList" style="display:none">
+        <div class="empty-state"><p>Your buys will show here after you complete an order.</p></div>
       </div>
     </div>
     <div class="nav-spacer"></div>
@@ -285,6 +317,9 @@
   <script src="js/core.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/home.js"></script>
+  <script src="js/order-commission.js"></script>
+  <script src="js/referral.js"></script>
+  <script src="js/mine.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
