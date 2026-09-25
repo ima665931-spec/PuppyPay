@@ -64,28 +64,55 @@
     const nextLabel = document.getElementById('refMsNextLabel');
     const nextCount = document.getElementById('refMsNextCount');
     const bar = document.getElementById('refMsBarFill');
+    const ringFg = document.getElementById('refMsRingFg');
+    const ringTxt = document.getElementById('refMsRingTxt');
+    let pct = 0;
     if (next) {
-      if (nextLabel) nextLabel.textContent = '\u20b9' + next.reward + ' next \u00b7 ' + next.label;
-      if (nextCount) nextCount.textContent = Math.min(active, next.need) + ' / ' + next.need;
-      if (bar) bar.style.width = Math.min(100, Math.round((active / next.need) * 100)) + '%';
+      pct = Math.min(100, Math.round((active / next.need) * 100));
+      if (nextLabel) nextLabel.textContent = 'Next \u00b7 \u20b9' + next.reward;
+      if (nextCount) nextCount.textContent = Math.min(active, next.need) + ' / ' + next.need + ' active';
+      if (bar) bar.style.width = pct + '%';
     } else {
-      if (nextLabel) nextLabel.textContent = 'All milestones unlocked';
-      if (nextCount) nextCount.textContent = active + ' active';
+      pct = 100;
+      if (nextLabel) nextLabel.textContent = 'All rewards unlocked';
+      if (nextCount) nextCount.textContent = active + ' active referrals';
       if (bar) bar.style.width = '100%';
     }
-    list.innerHTML = MILESTONES.map(function (m) {
+    if (ringFg) ringFg.setAttribute('stroke-dasharray', pct + ',100');
+    if (ringTxt) ringTxt.textContent = pct + '%';
+
+    const tiers = [
+      { icon: '\uD83E\uDD49', name: 'Bronze' },
+      { icon: '\uD83E\uDD48', name: 'Silver' },
+      { icon: '\uD83E\uDD47', name: 'Gold' },
+      { icon: '\uD83D\uDC8E', name: 'Diamond' }
+    ];
+
+    list.innerHTML = MILESTONES.map(function (m, i) {
       const isClaimed = claimed.indexOf(m.id) !== -1;
       const unlocked = active >= m.need;
-      let statusCls = 'locked', statusTxt = 'Locked', btn = '';
-      if (isClaimed) { statusCls = 'claimed'; statusTxt = 'Claimed'; }
-      else if (unlocked) {
-        statusCls = 'ready'; statusTxt = 'Ready';
-        btn = '<button type="button" class="btn btn-primary btn-sm ref-ms-claim" data-ms="' + m.id + '">Claim \u20b9' + m.reward + '</button>';
-      } else { statusTxt = (m.need - active) + ' more'; }
-      return '<div class="ref-ms-card ' + statusCls + '">' +
-        '<div class="ref-ms-left"><div class="ref-ms-reward">\u20b9' + m.reward + '</div><div class="ref-ms-label">' + m.label + '</div></div>' +
-        '<div class="ref-ms-right"><span class="ref-ms-status">' + statusTxt + '</span>' + btn + '</div></div>';
+      const tier = tiers[i] || tiers[0];
+      let cls = 'locked';
+      let action = '<span class="ref-ms-chip-lock">' + (m.need - active > 0 ? (m.need - active) + ' left' : 'Locked') + '</span>';
+      if (isClaimed) {
+        cls = 'claimed';
+        action = '<span class="ref-ms-chip-done">\u2713 Claimed</span>';
+      } else if (unlocked) {
+        cls = 'ready';
+        action = '<button type="button" class="ref-ms-claim-btn" data-ms="' + m.id + '">Claim \u20b9' + m.reward + '</button>';
+      }
+      return (
+        '<div class="ref-ms-chip ' + cls + '">' +
+          '<div class="ref-ms-chip-icon">' + tier.icon + '</div>' +
+          '<div class="ref-ms-chip-body">' +
+            '<div class="ref-ms-chip-name">' + tier.name + ' \u00b7 \u20b9' + m.reward + '</div>' +
+            '<div class="ref-ms-chip-need">' + m.need + ' active referrals</div>' +
+          '</div>' +
+          '<div class="ref-ms-chip-action">' + action + '</div>' +
+        '</div>'
+      );
     }).join('');
+
     const histWrap = document.getElementById('refMsHistory');
     const histList = document.getElementById('refMsHistList');
     if (histWrap && histList) {
@@ -93,7 +120,8 @@
       if (claimedMs.length) {
         histWrap.style.display = 'block';
         histList.innerHTML = claimedMs.map(function (m) {
-          return '<div class="ref-ms-hist-row"><span>' + m.label + '</span><strong>+\u20b9' + m.reward + '</strong></div>';
+          const t = tiers[MILESTONES.indexOf(m)] || { icon: '\u2713' };
+          return '<div class="ref-ms-hist-row"><span>' + t.icon + ' ' + m.label + '</span><strong>+\u20b9' + m.reward + '</strong></div>';
         }).join('');
       } else histWrap.style.display = 'none';
     }
@@ -185,7 +213,7 @@
     if (!team) return;
     const pc = team.querySelector('.page-content');
     if (!pc) return;
-    if (pc.querySelector('.ref-hero') && pc.querySelector('.ref-milestones')) {
+    if (pc.querySelector('.ref-hero') && pc.querySelector('.ref-ms-top')) {
       ensureStickyInvite();
       updateMilestones(getActiveCount());
       return;
@@ -224,13 +252,34 @@
         <div class="ref-stat green"><div class="lbl">This Month</div><div class="val" id="refMonth">\u20b90</div></div>
       </div>
       <div class="ref-milestones" id="refMilestones">
-        <div class="ref-ms-head"><h4>Milestones</h4><span class="ref-ms-sub" id="refMsSub">Unlock bonuses as your team grows</span></div>
-        <div class="ref-ms-progress-wrap">
-          <div class="ref-ms-progress-label"><span id="refMsNextLabel">Next reward</span><span id="refMsNextCount">0 / 5</span></div>
+        <div class="ref-ms-top">
+          <div class="ref-ms-top-left">
+            <div class="ref-ms-badge-icon">\uD83C\uDFC6</div>
+            <div>
+              <div class="ref-ms-title">Reward Roadmap</div>
+              <div class="ref-ms-sub" id="refMsSub">Grow team \u00b7 Unlock cash bonuses</div>
+            </div>
+          </div>
+          <div class="ref-ms-ring" id="refMsRing">
+            <svg viewBox="0 0 36 36" class="ref-ms-ring-svg">
+              <path class="ref-ms-ring-bg" d="M18 2.5a15.5 15.5 0 1 1 0 31 15.5 15.5 0 1 1 0-31"/>
+              <path class="ref-ms-ring-fg" id="refMsRingFg" stroke-dasharray="0,100" d="M18 2.5a15.5 15.5 0 1 1 0 31 15.5 15.5 0 1 1 0-31"/>
+            </svg>
+            <div class="ref-ms-ring-txt" id="refMsRingTxt">0%</div>
+          </div>
+        </div>
+        <div class="ref-ms-next" id="refMsNextBox">
+          <div class="ref-ms-next-main">
+            <span class="ref-ms-next-label" id="refMsNextLabel">Next: \u20b950</span>
+            <span class="ref-ms-next-count" id="refMsNextCount">0 / 5 active</span>
+          </div>
           <div class="ref-ms-bar"><div class="ref-ms-bar-fill" id="refMsBarFill" style="width:0%"></div></div>
         </div>
-        <div class="ref-ms-list" id="refMsList"></div>
-        <div class="ref-ms-history" id="refMsHistory" style="display:none;"><div class="ref-ms-hist-title">Claimed rewards</div><div id="refMsHistList"></div></div>
+        <div class="ref-ms-track" id="refMsList"></div>
+        <div class="ref-ms-history" id="refMsHistory" style="display:none;">
+          <div class="ref-ms-hist-title">Claimed</div>
+          <div id="refMsHistList"></div>
+        </div>
       </div>
       <div class="ref-info-banner-wrap" id="refInfoBannerWrap">
         <img class="ref-info-banner" id="refInfoBannerImg" src="assets/referral-info-banner.jpg" alt="How referral works" style="display:none;">
