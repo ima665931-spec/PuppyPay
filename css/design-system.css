@@ -88,6 +88,7 @@ a { color: inherit; text-decoration: none; }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  position: relative;
 }
 .view.active {
   display: flex !important;
@@ -360,10 +361,10 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 30;
+  z-index: 50;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .2s ease;
+  transition: opacity .15s ease;
 }
 .ptr-indicator.visible {
   opacity: 1;
