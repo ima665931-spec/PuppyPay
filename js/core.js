@@ -109,7 +109,7 @@ document.getElementById('avatarBtn')?.addEventListener('click', () => showView('
 
 function formatINR(n) {
   const num = Number(n) || 0;
-  return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return '\u20b9' + num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 function getGreeting() {
@@ -145,9 +145,9 @@ function populateUserUI() {
     const pName = document.getElementById('profileName');
     if (pName) pName.textContent = name;
     const pId = document.getElementById('profileId');
-    if (pId) pId.textContent = 'ID: ' + (user.appId || '—');
+    if (pId) pId.textContent = 'ID: ' + (user.appId || '\u2014');
     const refCode = document.getElementById('myReferralCode');
-    if (refCode) refCode.textContent = user.referralCode || '—';
+    if (refCode) refCode.textContent = user.referralCode || '\u2014';
     if (typeof applyAvatars === 'function') applyAvatars();
   } catch (e) {}
 }
@@ -159,9 +159,9 @@ document.getElementById('eyeToggle')?.addEventListener('click', () => {
   if (!el) return;
   if (balanceHidden) {
     el.dataset.real = el.textContent;
-    el.textContent = '₹ ••••••';
+    el.textContent = '\u20b9 \u2022\u2022\u2022\u2022\u2022\u2022';
   } else {
-    el.textContent = el.dataset.real || '₹ 0.00';
+    el.textContent = el.dataset.real || '\u20b9 0.00';
   }
 });
 
@@ -187,7 +187,7 @@ document.getElementById('eyeToggle')?.addEventListener('click', () => {
 
 document.getElementById('copyRefBtn')?.addEventListener('click', () => {
   const code = document.getElementById('myReferralCode')?.textContent;
-  if (code && code !== '—') navigator.clipboard?.writeText(code).then(() => showToast('Copied!', 'success'));
+  if (code && code !== '\u2014') navigator.clipboard?.writeText(code).then(() => showToast('Copied!', 'success'));
 });
 
 (function swipeNav() {
@@ -227,11 +227,22 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     },
   };
 
-  Object.keys(VIEWS).forEach(viewId => {
-    const view = document.getElementById(viewId);
+  function scrollTopOf(view) {
+    var pc = view.querySelector('.page-content');
+    var a = view.scrollTop || 0;
+    var b = pc ? (pc.scrollTop || 0) : 0;
+    return Math.max(a, b);
+  }
+
+  Object.keys(VIEWS).forEach(function (viewId) {
+    var view = document.getElementById(viewId);
     if (!view) return;
 
-    let ptr = view.querySelector('.ptr-indicator');
+    if (getComputedStyle(view).position === 'static') {
+      view.style.position = 'relative';
+    }
+
+    var ptr = view.querySelector('.ptr-indicator');
     if (!ptr) {
       ptr = document.createElement('div');
       ptr.className = 'ptr-indicator';
@@ -239,30 +250,40 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
       view.insertBefore(ptr, view.firstChild);
     }
 
-    let startY = 0, pulling = false, refreshing = false;
+    var startY = 0, pulling = false, refreshing = false;
 
-    view.addEventListener('touchstart', (e) => {
+    view.addEventListener('touchstart', function (e) {
       if (refreshing || e.touches.length !== 1) return;
-      if (view.scrollTop > 2) return;
+      if (scrollTopOf(view) > 2) return;
       startY = e.touches[0].clientY;
       pulling = true;
     }, { passive: true });
 
-    view.addEventListener('touchmove', (e) => {
+    view.addEventListener('touchmove', function (e) {
       if (!pulling || refreshing) return;
-      const dy = e.touches[0].clientY - startY;
-      if (dy < 0) { ptr.classList.remove('visible', 'ready'); return; }
-      const pull = Math.min(dy * 0.4, 72);
-      ptr.style.transform = `translate(-50%, ${pull - 40}px)`;
-      if (pull > 48) ptr.classList.add('ready');
+      if (scrollTopOf(view) > 2) {
+        pulling = false;
+        ptr.classList.remove('visible', 'ready');
+        ptr.style.transform = '';
+        return;
+      }
+      var dy = e.touches[0].clientY - startY;
+      if (dy < 0) {
+        ptr.classList.remove('visible', 'ready');
+        ptr.style.transform = '';
+        return;
+      }
+      var pull = Math.min(dy * 0.45, 80);
+      ptr.style.transform = 'translate(-50%, ' + (pull - 40) + 'px)';
+      if (pull > 50) ptr.classList.add('ready');
       else ptr.classList.remove('ready');
-      if (pull > 8) ptr.classList.add('visible');
+      if (pull > 10) ptr.classList.add('visible');
     }, { passive: true });
 
-    view.addEventListener('touchend', async () => {
+    view.addEventListener('touchend', async function () {
       if (!pulling || refreshing) return;
       pulling = false;
-      const isReady = ptr.classList.contains('ready');
+      var isReady = ptr.classList.contains('ready');
       ptr.classList.remove('ready');
       if (!isReady) {
         ptr.classList.remove('visible');
@@ -274,7 +295,7 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
       ptr.style.transform = 'translate(-50%, 12px)';
       try {
         await Promise.resolve(VIEWS[viewId]());
-        await new Promise(r => setTimeout(r, 450));
+        await new Promise(function (r) { setTimeout(r, 400); });
       } catch (_) {}
       refreshing = false;
       ptr.classList.remove('visible', 'spinning');
