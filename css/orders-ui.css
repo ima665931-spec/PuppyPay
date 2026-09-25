@@ -162,12 +162,18 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* ===== Orders P0 — summary, tabs, chips ===== */
+/* ===== Orders P0+P1 — summary, tabs, chips ===== */
 .orders-summary {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-bottom: 14px;
+}
+.orders-sum-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 2px;
 }
 .orders-sum-card {
   background: linear-gradient(160deg, #ffffff 0%, #eff6ff 45%, #dbeafe 100%);
@@ -344,3 +350,64 @@
   color: #16a34a;
 }
 .my-order-time { margin-left: auto; }
+
+/* ===== P1 — status timeline on My Orders ===== */
+.my-order-timeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+.my-tl-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.my-tl-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+.my-tl-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 2px solid #cbd5e1;
+  z-index: 1;
+  position: relative;
+}
+.my-tl-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.my-tl-step.done .my-tl-dot {
+  background: #22c55e;
+  border-color: #16a34a;
+}
+.my-tl-step.done .my-tl-label { color: #16a34a; }
+.my-tl-step.done:not(:last-child)::after { background: #86efac; }
+.my-tl-step.active .my-tl-dot {
+  background: #fbbf24;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25);
+}
+.my-tl-step.active .my-tl-label { color: #b45309; }
+.my-tl-step.fail .my-tl-dot {
+  background: #ef4444;
+  border-color: #dc2626;
+}
+.my-tl-step.fail .my-tl-label { color: #dc2626; }
