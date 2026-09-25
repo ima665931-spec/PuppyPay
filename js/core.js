@@ -376,3 +376,13 @@ document.getElementById('copyRefBtn')?.addEventListener('click', () => {
     document.body.appendChild(s);
   }
 })();
+
+/* Order card commission badges */
+(function loadOrderCommission() {
+  if (!document.querySelector('script[src*="order-commission.js"]')) {
+    const s = document.createElement('script');
+    s.src = 'js/order-commission.js';
+    s.defer = true;
+    document.body.appendChild(s);
+  }
+})();
