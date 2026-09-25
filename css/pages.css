@@ -291,25 +291,29 @@ html:not(.has-token) .support-fab {
   flex-shrink: 0;
 }
 .carousel {
-  border-radius: 20px;
+  border-radius: 18px;
   overflow: hidden;
-  background: var(--bg-soft);
-  border: 1px solid rgba(255,255,255,0.6);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: none;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
+  /* Safari rounded-corner clip fix */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
 }
 .carousel-track {
   display: flex;
   transition: transform .45s ease;
+  will-change: transform;
 }
-/* Fixed frame = banner3 aspect so all banners fit the same */
+/* Same frame as banner3 — no gaps / no edge lines */
 .carousel-slide {
   min-width: 100%;
+  flex-shrink: 0;
   aspect-ratio: 1632 / 656;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  background: #e2e8f0;
+  background: transparent;
+  line-height: 0;
+  font-size: 0;
 }
 .carousel-slide img {
   width: 100%;
@@ -318,6 +322,11 @@ html:not(.has-token) .support-fab {
   object-position: center center;
   display: block;
   max-height: none;
+  /* 1px scale kills subpixel hairlines top/bottom */
+  transform: scale(1.02);
+  transform-origin: center center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .carousel-dots {
   display: flex;
