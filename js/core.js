@@ -25,7 +25,7 @@ function showView(name) {
   }
 
   const nav = document.getElementById('bottomNav');
-  const fab = document.getElementById('supportFabBtn');
+  const fab = document.getElementById('supportFab');
   const mainTabs = ['home', 'team', 'orders', 'mine'];
   if (nav) {
     if (mainTabs.includes(name)) {
@@ -101,7 +101,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
 
 document.getElementById('menuWithdraw')?.addEventListener('click', () => showView('withdraw'));
 document.getElementById('menuSupport')?.addEventListener('click', () => window.open('https://t.me/PuppyPayOfficialSupport', '_blank'));
-document.getElementById('supportFabBtn')?.addEventListener('click', () => window.open('https://t.me/PuppyPayOfficialSupport', '_blank'));
+document.getElementById('supportFab')?.addEventListener('click', () => window.open('https://t.me/PuppyPayOfficialSupport', '_blank'));
 document.getElementById('menuDownloadApk')?.addEventListener('click', () => {
   showToast('APK download coming soon', 'success');
 });
