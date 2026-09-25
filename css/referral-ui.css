@@ -277,3 +277,17 @@
   font-weight: 600;
   margin-left: 4px;
 }
+
+.ref-info-banner-wrap {
+  margin-bottom: 14px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ref-info-banner {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  object-fit: cover;
+  max-height: 200px;
+}
