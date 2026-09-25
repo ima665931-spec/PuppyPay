@@ -1,259 +1,234 @@
-/* PuppyPay — Selling / Withdraw window */
+/* PuppyPay — Selling / Withdraw — clean professional */
 
 #withdrawView {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #0f172a 100%) !important;
+  background: #0f172a !important;
 }
 #withdrawView .page-header {
-  background: transparent !important;
+  background: #0f172a !important;
   border-bottom: 1px solid rgba(255,255,255,0.08) !important;
 }
 #withdrawView .page-header h2,
-#withdrawView .back-btn { color: #fff !important; }
+#withdrawView .back-btn { color: #e2e8f0 !important; }
 #withdrawView .back-btn {
-  background: rgba(255,255,255,0.1) !important;
-  border-color: rgba(255,255,255,0.15) !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
 }
 #withdrawView .page-content {
   padding: 16px 16px 32px !important;
 }
 
-.sell-step { display: none; animation: sellIn .35s ease; }
+.sell-step { display: none; }
 .sell-step.active { display: block; }
-@keyframes sellIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
-}
 
-/* Welcome */
+/* Welcome — minimal */
 .sell-welcome {
-  text-align: center;
-  padding: 28px 12px 12px;
-}
-.sell-welcome-icon {
-  width: 72px; height: 72px;
-  margin: 0 auto 16px;
-  border-radius: 22px;
-  background: linear-gradient(145deg, #2563eb, #1e40af);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 12px 32px rgba(37,99,235,.45);
-  font-size: 32px;
-  animation: sellPulse 2s ease-in-out infinite;
-}
-@keyframes sellPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  padding: 24px 4px 8px;
 }
 .sell-welcome h3 {
-  color: #fff;
-  font-size: 22px;
-  font-weight: 800;
+  color: #f1f5f9;
+  font-size: 18px;
+  font-weight: 700;
   margin: 0 0 6px;
-  letter-spacing: -.02em;
 }
 .sell-welcome p {
-  color: rgba(255,255,255,.65);
-  font-size: 14px;
-  margin: 0 0 22px;
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 0 0 20px;
   line-height: 1.45;
 }
 .sell-name-field label {
   display: block;
-  text-align: left;
-  color: rgba(255,255,255,.7);
+  color: #94a3b8;
   font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  letter-spacing: .04em;
-  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 .sell-name-field input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.08);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #f1f5f9;
+  font-size: 15px;
   outline: none;
 }
 .sell-name-field input:focus {
-  border-color: rgba(96,165,250,.6);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.25);
+  border-color: rgba(148,163,184,0.45);
 }
-.sell-name-field input::placeholder { color: rgba(255,255,255,.35); }
+.sell-name-field input::placeholder { color: #64748b; }
 
 .sell-btn-primary {
   width: 100%;
-  margin-top: 18px;
-  height: 52px;
+  margin-top: 16px;
+  height: 48px;
   border: none;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 15px;
-  color: #fff;
-  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
-  box-shadow: 0 10px 24px rgba(37,99,235,.4);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+  background: #e2e8f0;
   cursor: pointer;
 }
-.sell-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.sell-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* Checking eligibility */
+/* Check */
 .sell-check {
   text-align: center;
   padding: 48px 16px;
 }
 .sell-check-spinner {
-  width: 48px; height: 48px;
-  margin: 0 auto 18px;
-  border: 3px solid rgba(255,255,255,.15);
-  border-top-color: #60a5fa;
+  width: 36px; height: 36px;
+  margin: 0 auto 14px;
+  border: 2px solid rgba(255,255,255,0.12);
+  border-top-color: #94a3b8;
   border-radius: 50%;
-  animation: sellSpin .8s linear infinite;
+  animation: sellSpin 0.7s linear infinite;
 }
 @keyframes sellSpin { to { transform: rotate(360deg); } }
 .sell-check h3 {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 800;
-  margin: 0 0 8px;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 6px;
 }
 .sell-check p {
-  color: rgba(255,255,255,.55);
-  font-size: 13px;
+  color: #64748b;
+  font-size: 12px;
   margin: 0;
 }
 
-/* Result cards */
+/* Info cards — flat */
+.sell-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
 .sell-info-card {
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px;
 }
 .sell-info-card .lbl {
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .06em;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
   text-transform: uppercase;
-  color: rgba(255,255,255,.5);
-  margin-bottom: 6px;
+  letter-spacing: 0.04em;
 }
 .sell-info-card .val {
-  font-size: 26px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -.03em;
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
 }
+.sell-info-card .val.sm { font-size: 15px; }
 .sell-info-card .sub {
-  font-size: 12px;
-  color: rgba(255,255,255,.45);
-  margin-top: 4px;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 3px;
 }
-.sell-info-card.ok { border-color: rgba(52,211,153,.35); background: rgba(16,185,129,.1); }
-.sell-info-card.bad { border-color: rgba(248,113,113,.35); background: rgba(239,68,68,.1); }
+.sell-info-card.ok { border-color: rgba(52,211,153,0.25); }
+.sell-info-card.bad { border-color: rgba(248,113,113,0.25); }
 
 .sell-section-title {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  margin: 18px 0 10px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 10px;
 }
 
-/* UPI cards */
-.sell-upi-list { display: flex; flex-direction: column; gap: 10px; }
+.sell-empty {
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* UPI cards — flat brand tint, no shine */
+.sell-upi-list { display: flex; flex-direction: column; gap: 8px; }
 .sell-upi-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
-  border-radius: 16px;
-  border: 1.5px solid transparent;
-  position: relative;
-  overflow: hidden;
-  min-height: 72px;
-}
-.sell-upi-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: .15;
-  background: radial-gradient(circle at 90% 20%, #fff 0%, transparent 55%);
-  pointer-events: none;
-}
-.sell-upi-card.phonepe {
-  background: linear-gradient(135deg, #5f259f 0%, #3d1a6e 100%);
-  border-color: rgba(167,139,250,.35);
-}
-.sell-upi-card.gpay {
-  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
-  border-color: rgba(144,202,249,.35);
-}
-.sell-upi-card.paytm {
-  background: linear-gradient(135deg, #00baf2 0%, #002970 100%);
-  border-color: rgba(125,211,252,.35);
-}
-.sell-upi-card.generic {
-  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
-  border-color: rgba(148,163,184,.3);
-}
-.sell-upi-logo {
-  width: 42px; height: 42px;
+  padding: 12px 12px;
   border-radius: 12px;
-  background: rgba(255,255,255,.95);
-  color: #0f172a;
-  font-weight: 900;
-  font-size: 11px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  letter-spacing: -.02em;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  min-height: 60px;
 }
-.sell-upi-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.sell-upi-card.phonepe { border-color: rgba(139,92,246,0.35); }
+.sell-upi-card.gpay { border-color: rgba(59,130,246,0.35); }
+.sell-upi-card.paytm { border-color: rgba(14,165,233,0.35); }
+.sell-upi-card.bhim,
+.sell-upi-card.generic { border-color: rgba(148,163,184,0.25); }
+
+.sell-upi-logo {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sell-upi-body { flex: 1; min-width: 0; }
 .sell-upi-id {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
+  color: #f1f5f9;
+  font-size: 13px;
+  font-weight: 600;
   word-break: break-all;
 }
 .sell-upi-tag {
   font-size: 11px;
-  color: rgba(255,255,255,.65);
+  color: #64748b;
   margin-top: 2px;
-  font-weight: 600;
 }
 
-/* Toggle */
-.sell-toggle-wrap {
+.sell-upi-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
-  position: relative;
-  z-index: 1;
 }
 .sell-toggle {
-  width: 52px;
-  height: 30px;
+  width: 44px;
+  height: 26px;
   border-radius: 999px;
-  background: rgba(255,255,255,.2);
+  background: rgba(255,255,255,0.12);
   border: none;
-  padding: 3px;
+  padding: 2px;
   cursor: pointer;
   position: relative;
-  transition: background .2s;
 }
 .sell-toggle.on { background: #22c55e; }
 .sell-toggle span {
   display: block;
-  width: 24px; height: 24px;
+  width: 22px; height: 22px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,.25);
-  transition: transform .2s;
+  transition: transform 0.15s;
 }
-.sell-toggle.on span { transform: translateX(22px); }
-.sell-toggle:disabled { opacity: .45; cursor: not-allowed; }
+.sell-toggle.on span { transform: translateX(18px); }
+.sell-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.sell-upi-del {
+  width: 28px; height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.sell-upi-del:hover { color: #f87171; background: rgba(248,113,113,0.1); }
 
 .sell-add-upi {
   display: flex;
@@ -262,62 +237,72 @@
 }
 .sell-add-upi input {
   flex: 1;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.08);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #f1f5f9;
+  font-size: 13px;
   outline: none;
 }
+.sell-add-upi input:focus { border-color: rgba(148,163,184,0.4); }
+.sell-add-upi input::placeholder { color: #64748b; }
 .sell-add-upi button {
-  padding: 0 16px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(255,255,255,.15);
-  color: #fff;
-  font-weight: 800;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+  font-weight: 700;
   font-size: 13px;
   cursor: pointer;
 }
 
 .sell-suggest {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.2);
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 6px;
+}
+.sell-suggest[hidden] { display: none !important; }
+.sell-suggest-label {
+  width: 100%;
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 2px;
 }
 .sell-chip {
-  border: 1px solid rgba(255,255,255,.2);
-  background: rgba(255,255,255,.08);
-  color: rgba(255,255,255,.85);
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #cbd5e1;
   font-size: 11px;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 999px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
   cursor: pointer;
 }
-.sell-chip:active { background: rgba(255,255,255,.18); }
+.sell-chip:active { background: rgba(255,255,255,0.1); }
 
 .sell-error {
   margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(239,68,68,.15);
-  border: 1px solid rgba(248,113,113,.35);
-  color: #fecaca;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(248,113,113,0.25);
+  color: #fca5a5;
   font-size: 13px;
-  font-weight: 600;
   line-height: 1.4;
 }
 .sell-success {
   margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(16,185,129,.15);
-  border: 1px solid rgba(52,211,153,.35);
-  color: #a7f3d0;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(52,211,153,0.25);
+  color: #6ee7b7;
   font-size: 13px;
-  font-weight: 600;
 }
