@@ -245,6 +245,18 @@
   border-color: rgba(255,153,0,0.3);
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
 }
+.sell-upi-card.mobikwik {
+  border-color: rgba(14, 165, 233, 0.28);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+.sell-upi-card.freecharge {
+  border-color: rgba(249, 115, 22, 0.28);
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+}
+.sell-upi-card.navi {
+  border-color: rgba(99, 102, 241, 0.28);
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+}
 .sell-upi-card.generic {
   border-color: var(--border);
   background: #fff;
