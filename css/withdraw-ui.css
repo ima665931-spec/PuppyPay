@@ -262,10 +262,12 @@
   background: #fff;
   box-shadow: 0 1px 4px rgba(15,23,42,0.08);
 }
-.sell-upi-logo svg {
+.sell-upi-logo svg,
+.sell-upi-logo img {
   width: 44px;
   height: 44px;
   display: block;
+  object-fit: contain;
 }
 .sell-upi-body { flex: 1; min-width: 0; }
 .sell-upi-id {
@@ -335,41 +337,6 @@
   font-size: 13px;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(37,99,235,0.25);
-}
-
-.sell-suggest {
-  margin-top: 8px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: #fff;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.04);
-}
-.sell-suggest[hidden] { display: none !important; }
-.sell-suggest-label {
-  width: 100%;
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.sell-chip {
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.sell-chip:active {
-  background: var(--accent-soft);
-  border-color: #93c5fd;
-  color: var(--accent);
 }
 
 .sell-error {
