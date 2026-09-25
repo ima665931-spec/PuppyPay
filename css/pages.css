@@ -424,17 +424,17 @@ html:not(.has-token) .support-fab {
   font-weight: 800;
 }
 
-/* Support FAB — only Home, clean Telegram style */
+/* Support FAB — Home only, icon-only (no blue circle) */
 .support-fab {
   position: fixed;
   bottom: 92px;
-  right: 18px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #229ED9;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 0;
+  background: transparent;
   border: none;
-  box-shadow: 0 4px 14px rgba(34, 158, 217, 0.35);
+  box-shadow: none;
   cursor: pointer;
   display: none;
   align-items: center;
@@ -442,12 +442,19 @@ html:not(.has-token) .support-fab {
   z-index: 40;
   padding: 0;
 }
-.support-fab svg { width: 22px; height: 22px; fill: #fff; stroke: none; }
+.support-fab img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+.support-fab svg { width: 40px; height: 40px; display: block; }
 body:has(#homeView.active) .support-fab {
   display: flex !important;
 }
 @media (min-width: 431px) {
-  .support-fab { right: calc(50% - 215px + 18px); }
+  .support-fab { right: calc(50% - 215px + 16px); }
 }
 
 .page-header {
