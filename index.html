@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/referral-ui.css">
   <link rel="stylesheet" href="css/mine-ui.css">
   <link rel="stylesheet" href="css/card-themes.css">
+  <link rel="stylesheet" href="css/withdraw-ui.css">
   <script>
     (function(){
       try {
@@ -256,14 +257,9 @@
   </div>
 
   <div class="view" id="withdrawView">
-    <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Withdraw</h2></div>
+    <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Selling Window</h2></div>
     <div class="page-content">
-      <div class="eligibility-note" id="eligibilityNote">Checking eligibility...</div>
-      <form id="withdrawForm">
-        <div class="field"><label>Amount (₹)</label><div class="input-shell"><input type="number" id="withdrawAmount" placeholder="Enter amount" required min="100"></div></div>
-        <div class="field"><label>UPI ID / Bank Details</label><div class="input-shell"><input type="text" id="withdrawDest" placeholder="name@upi or account details" required></div></div>
-        <button type="submit" class="btn btn-primary btn-block btn-lg">Request Withdrawal</button>
-      </form>
+      <!-- Selling UI injected by withdraw.js -->
     </div>
   </div>
 
@@ -325,6 +321,7 @@
   <script src="js/order-commission.js"></script>
   <script src="js/referral.js"></script>
   <script src="js/mine.js"></script>
+  <script src="js/withdraw.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
