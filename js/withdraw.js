@@ -18,8 +18,11 @@
     const h = String(upi || '').toLowerCase().split('@')[1] || '';
     if (['ybl', 'ibl', 'axl', 'phonepe'].some((x) => h.includes(x))) return 'phonepe';
     if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'okindus', 'google'].some((x) => h.includes(x))) return 'gpay';
-    if (h.includes('paytm') || h === 'ptys') return 'paytm';
+    if (h.includes('paytm') || h.startsWith('pt') || h === 'ptys') return 'paytm';
     if (h.includes('apl') || h.includes('amazon')) return 'amazon';
+    if (h.includes('ikwik') || h.includes('mobikwik')) return 'mobikwik';
+    if (h.includes('freecharge')) return 'freecharge';
+    if (h.includes('navi')) return 'navi';
     if (h.includes('upi') || h.includes('axisbank') || h.includes('boi') || h.includes('sbi') || h.includes('pnb') || h.includes('icici')) return 'bhim';
     return 'generic';
   }
@@ -30,6 +33,9 @@
     if (b === 'paytm') return 'Paytm';
     if (b === 'amazon') return 'Amazon Pay';
     if (b === 'bhim') return 'BHIM UPI';
+    if (b === 'mobikwik') return 'MobiKwik';
+    if (b === 'freecharge') return 'Freecharge';
+    if (b === 'navi') return 'Navi';
     return 'UPI';
   }
 
@@ -40,6 +46,9 @@
     paytm: 'assets/upi-paytm.png',
     amazon: 'assets/upi-amazon.png',
     bhim: 'assets/upi-bhim.png',
+    mobikwik: 'assets/upi-mobikwik.png',
+    freecharge: 'assets/upi-freecharge.png',
+    navi: 'assets/upi-navi.png',
     generic: 'assets/upi-default.png',
   };
 
