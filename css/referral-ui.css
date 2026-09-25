@@ -413,10 +413,12 @@
   z-index: 40;
   transition: transform .25s ease;
   pointer-events: none;
+  display: none;
 }
 .ref-sticky-invite.show {
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
+  display: block;
 }
 .ref-sticky-btn {
   width: 100%;
@@ -425,6 +427,17 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+/* HARD HIDE on auth pages + logged-out */
+body:has(#loginView.active) .ref-sticky-invite,
+body:has(#registerView.active) .ref-sticky-invite,
+body:has(#forgotView.active) .ref-sticky-invite,
+html:not(.has-token) .ref-sticky-invite {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) translateY(200%) !important;
 }
 
 .ref-ms-chip {
