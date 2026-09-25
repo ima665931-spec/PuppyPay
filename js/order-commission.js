@@ -1,4 +1,4 @@
-/* Order commission display: first order 10%, then 4.9% + Rs4 */
+/* Order commission: first order 10%, then 4.9% + Rs4 — no bottom badge line */
 (function () {
   function firstDone() {
     try {
@@ -33,12 +33,9 @@
       reward = Math.round((Math.round(amt * 0.049 * 100) / 100 + 4) * 100) / 100;
     }
     var topClass = opts && opts.isTop ? ' order-card-top' : '';
-    var badge = isFirst
-      ? '<div class="order-first-badge">First order \u00b7 10% profit</div>'
-      : '<div class="order-first-badge" style="background:#ecfdf5;border-color:#6ee7b7;color:#047857;">4.9% + \u20b94</div>';
     var extra = isFirst ? '' : '<span class="order-profit-extra">+\u20b94</span>';
     var buying = (typeof buyingOrderId !== 'undefined' && buyingOrderId === oid);
-    return '<div class="order-card' + topClass + '" data-order-id="' + oid + '"><div class="order-card-left"><div class="order-amount">' + formatINR(amt) + '</div><div class="order-id-row">ID ' + shortId(oid) + '</div><div class="order-profit-row"><span class="order-profit">+' + formatINR(reward) + '</span><span class="order-rate">' + rate + '%</span>' + extra + '</div>' + badge + '</div><button class="btn btn-primary btn-buy" data-buy="' + oid + '" ' + (buying ? 'disabled' : '') + '>' + (buying ? '...' : 'Buy') + '</button></div>';
+    return '<div class="order-card' + topClass + '" data-order-id="' + oid + '"><div class="order-card-left"><div class="order-amount">' + formatINR(amt) + '</div><div class="order-id-row">ID ' + shortId(oid) + '</div><div class="order-profit-row"><span class="order-profit">+' + formatINR(reward) + '</span><span class="order-rate">' + rate + '%</span>' + extra + '</div></div><button class="btn btn-primary btn-buy" data-buy="' + oid + '" ' + (buying ? 'disabled' : '') + '>' + (buying ? '...' : 'Buy') + '</button></div>';
   };
 
   window.paintOrders = function (orders) {
