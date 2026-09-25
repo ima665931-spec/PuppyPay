@@ -291,42 +291,33 @@ html:not(.has-token) .support-fab {
   flex-shrink: 0;
 }
 .carousel {
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
-  background: transparent;
+  background: #0f172a;
   border: none;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
-  /* Safari rounded-corner clip fix */
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
-  mask-image: radial-gradient(white, black);
 }
 .carousel-track {
   display: flex;
   transition: transform .45s ease;
-  will-change: transform;
 }
-/* Same frame as banner3 — no gaps / no edge lines */
+/* Full banner visible — no zoom, no text crop */
 .carousel-slide {
   min-width: 100%;
   flex-shrink: 0;
-  aspect-ratio: 1632 / 656;
-  overflow: hidden;
-  background: transparent;
   line-height: 0;
   font-size: 0;
+  background: #0f172a;
 }
 .carousel-slide img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
+  height: auto;
   display: block;
+  object-fit: contain;
+  object-position: center center;
+  vertical-align: top;
+  transform: none;
   max-height: none;
-  /* 1px scale kills subpixel hairlines top/bottom */
-  transform: scale(1.02);
-  transform-origin: center center;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 .carousel-dots {
   display: flex;
@@ -624,7 +615,7 @@ body:has(#homeView.active) .support-fab {
 .profile-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 18px;
   margin-bottom: 16px;
   border-radius: var(--r-lg);
