@@ -39,6 +39,12 @@ function showView(name) {
   }
   if (fab) fab.style.display = name === 'home' ? 'flex' : 'none';
 
+  // Invite Now sticky — ONLY on Team tab (never on login/register/auth)
+  const stickyInvite = document.getElementById('refStickyInvite');
+  if (stickyInvite) {
+    stickyInvite.classList.toggle('show', name === 'team');
+  }
+
   if (name === 'home' && typeof loadDashboard === 'function') loadDashboard();
   if (name === 'team' && typeof loadReferrals === 'function') loadReferrals();
   if (name === 'history') {
