@@ -110,8 +110,7 @@
     if (item.total && Number(item.total) !== Number(item.amount)) details += row('Total', formatINR(item.total));
     if (item.orderId) details += row('Order ID', item.orderId);
     if (item.utr) details += row('UTR', item.utr);
-    if (item.upi) details += row('UPI', item.upi);
-    if (item.destination) details += row('To UPI', item.destination);
+    /* UPI intentionally hidden from user review screen */
     if (item.timeStr) details += row('Time', item.timeStr);
     if (item.note) details += row('Note', item.note);
 
@@ -159,8 +158,6 @@
       total: r.total || r.amount || 0,
       orderId: r.orderId || '',
       utr: r.utr || '',
-      upi: r.upiId || '',
-      destination: r.destination || '',
       note: r.adminNote || r.note || '',
       timeStr: timeStr,
       at: at
@@ -170,10 +167,6 @@
   function isFinal(st) {
     st = String(st || '').toLowerCase();
     return st === 'accepted' || st === 'rejected' || st === 'completed' || st === 'failed' || st === 'success';
-  }
-  function isOkStatus(st) {
-    st = String(st || '').toLowerCase();
-    return st === 'accepted' || st === 'completed' || st === 'success';
   }
 
   async function checkResults() {
@@ -191,7 +184,6 @@
       var watch = getWatch();
       var candidates = [];
 
-      /* 1) Watched orderIds that became final */
       Object.keys(watch).forEach(function (key) {
         var meta = watch[key];
         if (!meta || !meta.orderId) return;
@@ -207,7 +199,6 @@
         }
       });
 
-      /* 2) Any pending in history → keep watching */
       deposits.forEach(function (r) {
         if (r.isBonus || r.isReferral) return;
         var st = String(r.status || '').toLowerCase();
@@ -215,7 +206,6 @@
           addWatch('deposit', r.orderId, { amount: r.total || r.amount });
         } else if (isFinal(st) && r.orderId) {
           var it = toItem('deposit', r);
-          /* show if reviewed in last 6 hours and not seen */
           if (!isSeen(it.id) && Date.now() - it.at < 6 * 60 * 60 * 1000) candidates.push(it);
         }
       });
@@ -229,7 +219,6 @@
         }
       });
 
-      /* dedupe by id */
       var seenIds = {}, uniq = [];
       candidates.sort(function (a, b) { return b.at - a.at; });
       candidates.forEach(function (c) {
@@ -244,7 +233,6 @@
     }
   }
 
-  /* Intercept API: when user submits deposit/withdraw, start watching that orderId */
   function installIntercept() {
     var original = window.__puppypayWalletApiCall || window.walletApiCall;
     if (!original || original._ppResultWrapped) return;
@@ -287,7 +275,6 @@
   }
 
   window.ppCheckOrderResults = checkResults;
-  /* debug helper: window.ppTestResult({ok:true,kind:'deposit',amount:500,orderId:'TEST'}) */
   window.ppTestResult = function (opts) {
     showResult({
       id: 'test:' + Date.now(),
@@ -298,7 +285,6 @@
       total: (opts && opts.total) || 525,
       orderId: (opts && opts.orderId) || 'TEST123',
       utr: (opts && opts.utr) || '123456789012',
-      upi: (opts && opts.upi) || 'user@ybl',
       note: (opts && opts.note) || '',
       timeStr: new Date().toLocaleString('en-IN'),
       at: Date.now()
