@@ -32,7 +32,6 @@
   </style>
 </head>
 <body>
-
   <div id="splash" class="splash">
     <div class="splash-inner">
       <div class="splash-logo-wrap">
@@ -43,9 +42,7 @@
       <div class="splash-paws"><span></span><span></span><span></span></div>
     </div>
   </div>
-
 <div class="phone">
-
   <div class="view" id="registerView">
     <div class="auth-header">
       <div class="logo">
@@ -68,7 +65,6 @@
       <div class="auth-switch">Already have an account? <a id="goToLogin">Log in</a></div>
     </div>
   </div>
-
   <div class="view active" id="loginView">
     <div class="auth-header">
       <div class="logo"><img src="assets/logo.svg" alt="" width="36" height="36" style="border-radius:50%"><span class="logo-text">PuppyPay</span></div>
@@ -85,7 +81,6 @@
       <div class="auth-switch">New here? <a id="goToRegister">Create account</a></div>
     </div>
   </div>
-
   <div class="view" id="forgotView">
     <div class="auth-header">
       <div class="logo"><img src="assets/logo.svg" alt="" width="36" height="36" style="border-radius:50%"><span class="logo-text">PuppyPay</span></div>
@@ -103,7 +98,6 @@
       <div class="auth-switch">Remembered it? <a id="backToLogin">Log in</a></div>
     </div>
   </div>
-
   <div class="view" id="homeView">
     <div class="home-header">
       <div class="deco"></div><div class="deco2"></div>
@@ -149,7 +143,6 @@
     </div>
     <div class="nav-spacer"></div>
   </div>
-
   <div class="view" id="teamView">
     <div class="page-header"><h2>Team & Referrals</h2></div>
     <div class="page-content">
@@ -166,7 +159,6 @@
     </div>
     <div class="nav-spacer"></div>
   </div>
-
   <div class="view" id="ordersView">
     <div class="page-header"><h2>Orders</h2><button type="button" class="how-earn-btn" id="howEarnBtn">How to Earn</button></div>
     <div class="page-content">
@@ -181,19 +173,16 @@
           <div class="orders-sum-value accent" id="ordersFirstBonus">+10%</div>
         </div>
       </div>
-
       <div class="orders-tabs" id="ordersTabs">
         <button type="button" class="orders-tab active" data-otab="available">Available</button>
         <button type="button" class="orders-tab" data-otab="mine">My Orders</button>
       </div>
-
       <div class="order-chips" id="orderChips">
         <button type="button" class="order-chip active" data-chip="all">All</button>
         <button type="button" class="order-chip" data-chip="high">High ₹</button>
         <button type="button" class="order-chip" data-chip="low">Low ₹</button>
         <button type="button" class="order-chip" data-chip="new">New</button>
       </div>
-
       <div class="order-filter-bar" id="orderFilterBar">
         <div class="order-filter-inputs">
           <input type="number" id="orderFilterMin" placeholder="Min ₹" inputmode="numeric" min="0">
@@ -203,7 +192,6 @@
         <button type="button" class="btn btn-primary btn-sm" id="orderFilterApply">Filter</button>
         <button type="button" class="btn btn-secondary btn-sm" id="orderFilterClear">Clear</button>
       </div>
-
       <div id="ordersList">
         <div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div><p>Loading orders...</p></div>
       </div>
@@ -213,61 +201,19 @@
     </div>
     <div class="nav-spacer"></div>
   </div>
-
   <div class="view" id="mineView">
     <div class="page-header"><h2>Profile</h2></div>
-    <div class="page-content">
-      <div class="glass profile-card">
-        <div class="avatar-btn" style="width:56px;height:56px;background:var(--bg-soft);border-color:var(--border);color:var(--text-muted);" id="profileAvatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <div class="profile-info"><h3 id="profileName">User</h3><p id="profileId">ID: —</p></div>
-      </div>
-      <div class="glass menu-list" style="padding:8px;">
-        <button class="menu-item" id="menuHistory">
-          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
-          Transaction History
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="menu-item" id="menuWithdraw">
-          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg></span>
-          Withdraw
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="menu-item" id="menuCard">
-          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
-          PuppyPay Card
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="menu-item" id="menuSupport">
-          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-          Support
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="menu-item" id="menuDownloadApk">
-          <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
-          Download APK
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="menu-item" id="logoutBtn" style="color:var(--danger);">
-          <span class="menu-icon" style="background:var(--danger-soft);color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span>
-          Log out
-        </button>
-      </div>
-    </div>
+    <div class="page-content"></div>
     <div class="nav-spacer"></div>
   </div>
-
   <div class="view" id="withdrawView">
     <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>Selling Window</h2></div>
-    <div class="page-content">
-      <!-- Selling UI injected by withdraw.js -->
-    </div>
+    <div class="page-content"></div>
   </div>
-
   <div class="view" id="historyView">
     <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>History</h2></div>
     <div class="page-content" id="historyList"><div class="empty-state"><p>No transactions yet</p></div></div>
   </div>
-
   <div class="view" id="cardView">
     <div class="page-header"><button class="back-btn" data-back="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><h2>PuppyPay Card</h2></div>
     <div class="page-content">
@@ -289,18 +235,14 @@
       </div>
     </div>
   </div>
-
   <nav class="bottom-nav" id="bottomNav">
     <button class="nav-item active" data-view="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
     <button class="nav-item" data-view="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Team</span></button>
     <button class="nav-item" data-view="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span>Orders</span></button>
     <button class="nav-item" data-view="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Mine</span></button>
   </nav>
-
   <button class="support-fab" id="supportFab" aria-label="Support"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
-
-</div><!-- /.phone -->
-
+</div>
   <script src="js/api.js"></script>
   <script src="js/core.js"></script>
   <script src="js/app-kill.js"></script>
@@ -309,6 +251,7 @@
   <script src="js/order-commission.js"></script>
   <script src="js/referral.js"></script>
   <script src="js/mine.js"></script>
+  <script src="js/mine-notif-sync.js"></script>
   <script src="js/withdraw.js"></script>
   <script src="js/app.js"></script>
 </body>
