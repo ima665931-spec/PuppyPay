@@ -1,8 +1,51 @@
-/* PuppyPay — notifications: in-app beautiful cards + system bar with logo */
+/* PuppyPay — notifications: tall cards, bell icon, system bar */
 (function () {
-  var LOGO = (location.origin || '') + '/assets/logo.svg';
   var LIST_KEY = 'puppypay_notifications';
   var SHOWN_KEY = 'puppypay_notif_shown';
+  var ICON_PNG = null;
+
+  /* Blue circle + white bell as PNG data-URL (works in system notification bar) */
+  function buildIconPng(cb) {
+    if (ICON_PNG) { cb(ICON_PNG); return; }
+    try {
+      var c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.arc(64, 64, 60, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      /* bell body */
+      ctx.beginPath();
+      ctx.moveTo(44, 58);
+      ctx.quadraticCurveTo(44, 38, 64, 38);
+      ctx.quadraticCurveTo(84, 38, 84, 58);
+      ctx.lineTo(84, 72);
+      ctx.lineTo(92, 82);
+      ctx.lineTo(36, 82);
+      ctx.lineTo(44, 72);
+      ctx.closePath();
+      ctx.stroke();
+      /* bell clapper */
+      ctx.beginPath();
+      ctx.arc(64, 90, 8, 0, Math.PI * 2);
+      ctx.stroke();
+      /* top knob */
+      ctx.beginPath();
+      ctx.arc(64, 34, 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ICON_PNG = c.toDataURL('image/png');
+      cb(ICON_PNG);
+    } catch (_) {
+      cb((location.origin || '') + '/assets/logo.svg');
+    }
+  }
+
+  var BELL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
 
   function getList() {
     try { return JSON.parse(localStorage.getItem(LIST_KEY) || '[]'); } catch (_) { return []; }
@@ -18,15 +61,13 @@
       var s = getShown();
       s[id] = 1;
       var keys = Object.keys(s);
-      if (keys.length > 80) keys.slice(0, keys.length - 60).forEach(function (k) { delete s[k]; });
+      if (keys.length > 100) keys.slice(0, keys.length - 70).forEach(function (k) { delete s[k]; });
       localStorage.setItem(SHOWN_KEY, JSON.stringify(s));
     } catch (_) {}
   }
-
   function notifKey(n) {
     return (n.title || '') + '|' + (n.body || '') + '|' + Math.floor((n.time || 0) / 60000);
   }
-
   function escapeHtml(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&')
@@ -34,16 +75,14 @@
       .replace(/>/g, '>')
       .replace(/"/g, '"');
   }
-
   function relativeTime(ts) {
     if (!ts) return '';
-    var d = new Date(ts);
-    var diff = (Date.now() - d.getTime()) / 1000;
+    var diff = (Date.now() - new Date(ts).getTime()) / 1000;
     if (diff < 60) return 'Just now';
     if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
     if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
     if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-    return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return new Date(ts).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 
   function ensureStyles() {
@@ -51,42 +90,36 @@
     var style = document.createElement('style');
     style.id = 'pp-notif-styles';
     style.textContent = [
-      '.pp-notif-list{display:flex;flex-direction:column;gap:12px;padding:4px 0 20px;}',
-      '.pp-notif-card{display:flex;gap:12px;align-items:flex-start;padding:14px 14px 14px 12px;',
-      'background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(248,250,252,.88));',
-      'border:1px solid rgba(226,232,240,.9);border-radius:16px;',
-      'box-shadow:0 4px 16px rgba(15,23,42,.06);transition:transform .15s ease,box-shadow .15s;}',
-      '.pp-notif-card:active{transform:scale(.98);}',
-      '.pp-notif-icon{flex-shrink:0;width:42px;height:42px;border-radius:12px;',
-      'background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;',
-      'box-shadow:0 4px 12px rgba(37,99,235,.28);}',
-      '.pp-notif-icon img{width:24px;height:24px;border-radius:6px;object-fit:contain;filter:brightness(0) invert(1);}',
-      '.pp-notif-body{flex:1;min-width:0;}',
-      '.pp-notif-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;}',
-      '.pp-notif-title{font-size:14px;font-weight:700;color:#0f172a;line-height:1.3;letter-spacing:-.01em;}',
-      '.pp-notif-time{font-size:11px;font-weight:500;color:#94a3b8;white-space:nowrap;flex-shrink:0;padding-top:2px;}',
-      '.pp-notif-msg{font-size:13px;line-height:1.45;color:#64748b;word-break:break-word;}',
-      '.pp-notif-empty{text-align:center;padding:48px 20px;color:#94a3b8;}',
-      '.pp-notif-empty-icon{width:56px;height:56px;margin:0 auto 14px;border-radius:16px;',
-      'background:linear-gradient(135deg,#eff6ff,#dbeafe);display:flex;align-items:center;justify-content:center;}',
-      '.pp-notif-empty-icon img{width:28px;height:28px;opacity:.7;}'
+      '.pp-notif-list{display:flex;flex-direction:column;gap:14px;padding:8px 18px 28px;max-width:340px;margin:0 auto;width:100%;box-sizing:border-box;}',
+      '.pp-notif-card{display:flex;gap:14px;align-items:flex-start;min-height:88px;',
+      'padding:18px 16px;background:#fff;border:1px solid #e8eef5;border-radius:18px;',
+      'box-shadow:0 6px 20px rgba(15,23,42,.07);}',
+      '.pp-notif-icon{flex-shrink:0;width:48px;height:48px;border-radius:14px;margin-top:2px;',
+      'background:linear-gradient(145deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;',
+      'box-shadow:0 6px 14px rgba(37,99,235,.3);}',
+      '.pp-notif-body{flex:1;min-width:0;padding-top:2px;}',
+      '.pp-notif-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}',
+      '.pp-notif-title{font-size:15px;font-weight:700;color:#0f172a;line-height:1.35;letter-spacing:-.01em;}',
+      '.pp-notif-time{font-size:11px;font-weight:600;color:#94a3b8;white-space:nowrap;flex-shrink:0;padding-top:3px;}',
+      '.pp-notif-msg{font-size:13.5px;line-height:1.55;color:#64748b;word-break:break-word;}',
+      '.pp-notif-empty{text-align:center;padding:56px 24px;color:#94a3b8;max-width:300px;margin:0 auto;}',
+      '.pp-notif-empty-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:18px;',
+      'background:linear-gradient(145deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;',
+      'box-shadow:0 8px 20px rgba(37,99,235,.25);}'
     ].join('');
     document.head.appendChild(style);
   }
 
   function cardHtml(n) {
-    var title = escapeHtml(n.title || 'PuppyPay');
-    var body = escapeHtml(n.body || '');
-    var time = relativeTime(n.time);
     return (
       '<div class="pp-notif-card">' +
-        '<div class="pp-notif-icon"><img src="' + LOGO + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+        '<div class="pp-notif-icon">' + BELL_SVG + '</div>' +
         '<div class="pp-notif-body">' +
           '<div class="pp-notif-top">' +
-            '<div class="pp-notif-title">' + title + '</div>' +
-            '<div class="pp-notif-time">' + escapeHtml(time) + '</div>' +
+            '<div class="pp-notif-title">' + escapeHtml(n.title || 'PuppyPay') + '</div>' +
+            '<div class="pp-notif-time">' + escapeHtml(relativeTime(n.time)) + '</div>' +
           '</div>' +
-          (body ? '<div class="pp-notif-msg">' + body + '</div>' : '') +
+          (n.body ? '<div class="pp-notif-msg">' + escapeHtml(n.body) + '</div>' : '') +
         '</div>' +
       '</div>'
     );
@@ -95,25 +128,28 @@
   function emptyHtml() {
     return (
       '<div class="pp-notif-empty">' +
-        '<div class="pp-notif-empty-icon"><img src="' + LOGO + '" alt=""></div>' +
-        '<p style="font-size:14px;font-weight:600;color:#64748b;margin:0 0 4px;">No notifications yet</p>' +
-        '<p style="font-size:12px;margin:0;color:#94a3b8;">Updates & rewards will show here</p>' +
+        '<div class="pp-notif-empty-icon">' + BELL_SVG + '</div>' +
+        '<p style="font-size:15px;font-weight:700;color:#64748b;margin:0 0 6px;">No notifications yet</p>' +
+        '<p style="font-size:13px;margin:0;color:#94a3b8;line-height:1.4;">Updates & rewards will appear here</p>' +
       '</div>'
     );
   }
 
   function showSystem(title, body, id) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    try {
-      var opts = {
-        body: body || '',
-        icon: LOGO,
-        badge: LOGO,
-        tag: 'puppypay-' + (id || Date.now()),
-        renotify: false
-      };
-      new Notification(title || 'PuppyPay', opts);
-    } catch (_) {}
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+    buildIconPng(function (icon) {
+      try {
+        new Notification(title || 'PuppyPay', {
+          body: body || '',
+          icon: icon,
+          badge: icon,
+          tag: 'puppypay-' + (id || Date.now()),
+          renotify: true,
+          requireInteraction: false
+        });
+      } catch (_) {}
+    });
   }
 
   function fireNewSystem(items) {
@@ -169,7 +205,6 @@
     });
   };
 
-  /* Patch local push so system bar gets logo */
   window.pushLocalNotification = function (title, body) {
     var list = getList();
     list.unshift({ title: title, body: body, time: Date.now() });
@@ -177,18 +212,30 @@
     var id = notifKey({ title: title, body: body, time: Date.now() });
     markShown(id);
     showSystem(title, body, id);
-    if (typeof window.renderNotifications === 'function') {
-      try { window.renderNotifications(); } catch (_) {}
-    }
+    try { if (typeof window.renderNotifications === 'function') window.renderNotifications(); } catch (_) {}
   };
 
+  /* Ask permission once if default (needed for system bar) */
+  function ensurePermission() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default' && localStorage.getItem('puppypay_notif_never') !== '1') {
+      /* soft — don't force popup; user can Allow from Notifications screen */
+    }
+  }
+
+  /* Poll every 8s while app open so admin-sent msgs hit system bar fast */
   setInterval(function () {
     if (localStorage.getItem('puppypay_token')) loadServer();
-  }, 30000);
+  }, 8000);
 
+  function boot() {
+    ensurePermission();
+    buildIconPng(function () {});
+    if (localStorage.getItem('puppypay_token')) loadServer();
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(function () { if (localStorage.getItem('puppypay_token')) loadServer(); }, 800); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 600); });
   } else {
-    setTimeout(function () { if (localStorage.getItem('puppypay_token')) loadServer(); }, 800);
+    setTimeout(boot, 600);
   }
 })();
