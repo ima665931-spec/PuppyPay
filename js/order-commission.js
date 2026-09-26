@@ -1,9 +1,12 @@
 /* Order commission + Orders UI
-   First order: 10% | Standard: 4.9% + Rs4 | HOT: 5.9% + Rs4
+   First order: 10% | Standard: 4.9% + Rs4 | HOT: 5.9% + Rs4 (₹400–₹2000 only)
    Chips: All / High / Low / New / HOT | Tabs: Available / My Orders */
 (function () {
   var orderChip = 'all';
   var ordersTab = 'available';
+  var HOT_MIN = 400;
+  var HOT_MAX = 2000;
+  var HOT_LIMIT = 7;
 
   function firstDone() {
     try {
@@ -155,10 +158,14 @@
     );
   };
 
+  /** HOT = amount between ₹400 and ₹2000 only, up to 7 cards, highest first */
   function getHotOrders(orders) {
-    var list = (orders || []).slice();
+    var list = (orders || []).filter(function (o) {
+      var a = Number(o.amount) || 0;
+      return a >= HOT_MIN && a <= HOT_MAX;
+    });
     list.sort(function (a, b) { return (Number(b.amount) || 0) - (Number(a.amount) || 0); });
-    return list.slice(0, 7).map(function (o) {
+    return list.slice(0, HOT_LIMIT).map(function (o) {
       return Object.assign({}, o, { isHot: true });
     });
   }
@@ -196,7 +203,10 @@
     filtered = applyChips(filtered);
 
     if (!filtered.length) {
-      list.innerHTML = '<div class="empty-state"><p>No orders in this range</p><p class="empty-hint">Pull to refresh or clear filters</p></div>';
+      var emptyMsg = orderChip === 'hot'
+        ? 'No HOT orders right now (₹400–₹2000)'
+        : 'No orders in this range';
+      list.innerHTML = '<div class="empty-state"><p>' + emptyMsg + '</p><p class="empty-hint">Pull to refresh or clear filters</p></div>';
       return;
     }
     var isHotMode = orderChip === 'hot';
@@ -361,7 +371,6 @@
     }
   }
 
-  // Inject HOT chip styles
   (function () {
     if (document.getElementById('pp-hot-css')) return;
     var s = document.createElement('style');
