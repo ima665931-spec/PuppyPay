@@ -1,8 +1,12 @@
-/* PuppyPay — Order Completed / Failed review screens (after admin action) */
+/* PuppyPay — reliable Order Completed / Failed screens after admin action */
 (function () {
-  var SEEN_KEY = 'puppypay_result_seen_v2';
-  var POLL_MS = 4000;
-  var MAX_AGE_MS = 72 * 60 * 60 * 1000; /* only last 72h reviews */
+  var SEEN_KEY = 'puppypay_result_seen_v3';
+  var WATCH_KEY = 'puppypay_result_watch';
+  var POLL_MS = 3000;
+
+  function api() {
+    return window.__puppypayWalletApiCall || window.walletApiCall || null;
+  }
 
   function getSeen() {
     try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '{}'); } catch (_) { return {}; }
@@ -11,13 +15,29 @@
     try {
       var s = getSeen();
       s[id] = Date.now();
-      var keys = Object.keys(s);
-      if (keys.length > 100) {
-        keys.sort(function (a, b) { return s[a] - s[b]; })
-          .slice(0, keys.length - 60)
-          .forEach(function (k) { delete s[k]; });
-      }
       localStorage.setItem(SEEN_KEY, JSON.stringify(s));
+    } catch (_) {}
+  }
+  function isSeen(id) {
+    return !!getSeen()[id];
+  }
+
+  function getWatch() {
+    try { return JSON.parse(localStorage.getItem(WATCH_KEY) || '{}'); } catch (_) { return {}; }
+  }
+  function addWatch(kind, orderId, meta) {
+    if (!orderId) return;
+    try {
+      var w = getWatch();
+      w[kind + ':' + orderId] = Object.assign({ kind: kind, orderId: String(orderId), at: Date.now() }, meta || {});
+      localStorage.setItem(WATCH_KEY, JSON.stringify(w));
+    } catch (_) {}
+  }
+  function removeWatch(key) {
+    try {
+      var w = getWatch();
+      delete w[key];
+      localStorage.setItem(WATCH_KEY, JSON.stringify(w));
     } catch (_) {}
   }
 
@@ -25,47 +45,36 @@
     if (typeof window.formatINR === 'function') return window.formatINR(n);
     return '₹' + (Number(n) || 0).toLocaleString('en-IN');
   }
-
   function esc(s) {
     return String(s == null ? '' : s)
-      .replace(/&/g, '&')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/"/g, '"');
+      .replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
   }
 
   function ensureStyles() {
-    var old = document.getElementById('pp-result-styles');
-    if (old) old.remove();
+    if (document.getElementById('pp-result-styles')) return;
     var s = document.createElement('style');
     s.id = 'pp-result-styles';
     s.textContent = [
-      '.pp-result-ov{position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.6);',
-      'display:flex;align-items:center;justify-content:center;padding:20px;animation:ppResIn .22s ease;}',
-      '@keyframes ppResIn{from{opacity:0}to{opacity:1}}',
+      '.pp-result-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.65);',
+      'display:flex;align-items:center;justify-content:center;padding:20px;}',
       '.pp-result-card{width:min(360px,100%);background:#fff;border-radius:22px;padding:28px 22px 20px;',
-      'text-align:center;box-shadow:0 24px 60px rgba(15,23,42,.25);animation:ppResUp .28s cubic-bezier(.22,1,.36,1);}',
-      '@keyframes ppResUp{from{transform:translateY(28px) scale(.96);opacity:0}to{transform:none;opacity:1}}',
-      '.pp-result-icon{width:80px;height:80px;border-radius:50%;margin:0 auto 14px;',
+      'text-align:center;box-shadow:0 24px 60px rgba(15,23,42,.3);}',
+      '.pp-result-icon{width:84px;height:84px;border-radius:50%;margin:0 auto 16px;',
       'display:flex;align-items:center;justify-content:center;}',
-      '.pp-result-icon.ok{background:#dcfce7;color:#16a34a;box-shadow:0 8px 24px rgba(22,163,74,.25);}',
-      '.pp-result-icon.bad{background:#fee2e2;color:#dc2626;box-shadow:0 8px 24px rgba(220,38,38,.22);}',
-      '.pp-result-icon svg{width:40px;height:40px;}',
-      '.pp-result-title{font-size:22px;font-weight:800;color:#0f172a;margin:0 0 6px;letter-spacing:-.02em;}',
-      '.pp-result-sub{font-size:13px;color:#64748b;margin:0 0 18px;line-height:1.45;}',
-      '.pp-result-amt{font-size:30px;font-weight:800;color:#0f172a;margin:0 0 14px;letter-spacing:-.03em;}',
-      '.pp-result-details{text-align:left;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;',
-      'padding:12px 14px;margin:0 0 18px;}',
-      '.pp-result-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;',
-      'font-size:12.5px;border-bottom:1px solid #f1f5f9;}',
+      '.pp-result-icon.ok{background:#dcfce7;color:#16a34a;}',
+      '.pp-result-icon.bad{background:#fee2e2;color:#dc2626;}',
+      '.pp-result-icon svg{width:42px;height:42px;}',
+      '.pp-result-title{font-size:22px;font-weight:800;color:#0f172a;margin:0 0 6px;}',
+      '.pp-result-sub{font-size:13px;color:#64748b;margin:0 0 16px;line-height:1.45;}',
+      '.pp-result-amt{font-size:30px;font-weight:800;color:#0f172a;margin:0 0 14px;}',
+      '.pp-result-details{text-align:left;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px 14px;margin:0 0 18px;}',
+      '.pp-result-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:12.5px;border-bottom:1px solid #f1f5f9;}',
       '.pp-result-row:last-child{border-bottom:none;}',
-      '.pp-result-row .k{color:#94a3b8;font-weight:600;}',
+      '.pp-result-row .k{color:#94a3b8;font-weight:600;flex-shrink:0;}',
       '.pp-result-row .v{color:#0f172a;font-weight:700;text-align:right;word-break:break-all;}',
-      '.pp-result-btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;',
-      'font-weight:800;cursor:pointer;font-family:inherit;color:#fff;}',
+      '.pp-result-btn{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;color:#fff;}',
       '.pp-result-btn.ok{background:#16a34a;}',
-      '.pp-result-btn.bad{background:#dc2626;}',
-      '.pp-result-btn:active{transform:scale(.98);}'
+      '.pp-result-btn.bad{background:#dc2626;}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -73,7 +82,7 @@
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
   var CROSS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
 
-  function detailRow(k, v) {
+  function row(k, v) {
     if (v == null || v === '') return '';
     return '<div class="pp-result-row"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
   }
@@ -81,39 +90,36 @@
   function showResult(item) {
     ensureStyles();
     if (document.getElementById('ppResultOverlay')) return;
+    if (isSeen(item.id)) return;
 
-    var isOk = item.ok;
+    var isOk = !!item.ok;
     var title, sub;
     if (item.kind === 'deposit') {
       title = isOk ? 'Order Completed' : 'Order Failed';
-      sub = isOk
-        ? 'Admin approved your order. Amount credited to wallet.'
-        : (item.note || 'Admin rejected your order.');
+      sub = isOk ? 'Admin approved your order. Amount credited to wallet.' : (item.note || 'Admin rejected your order.');
     } else {
       title = isOk ? 'Withdrawal Completed' : 'Withdrawal Failed';
-      sub = isOk
-        ? 'Admin approved your withdrawal.'
-        : (item.note || 'Admin rejected your withdrawal. Amount refunded.');
+      sub = isOk ? 'Admin approved your withdrawal.' : (item.note || 'Admin rejected your withdrawal. Amount refunded.');
     }
 
     var details = '';
-    details += detailRow('Type', item.kind === 'deposit' ? 'Deposit / Order' : 'Withdrawal');
-    details += detailRow('Status', isOk ? 'Completed' : 'Failed');
-    details += detailRow('Amount', formatINR(item.amount));
-    if (item.reward) details += detailRow('Reward', formatINR(item.reward));
-    if (item.total && item.total !== item.amount) details += detailRow('Total credited', formatINR(item.total));
-    if (item.orderId) details += detailRow('Order ID', item.orderId);
-    if (item.utr) details += detailRow('UTR', item.utr);
-    if (item.upi) details += detailRow('UPI', item.upi);
-    if (item.destination) details += detailRow('To UPI', item.destination);
-    if (item.timeStr) details += detailRow('Time', item.timeStr);
-    if (item.note) details += detailRow('Note', item.note);
+    details += row('Type', item.kind === 'deposit' ? 'Deposit / Order' : 'Withdrawal');
+    details += row('Status', isOk ? 'Completed ✓' : 'Failed ✕');
+    details += row('Amount', formatINR(item.amount));
+    if (item.reward) details += row('Reward', '+' + formatINR(item.reward));
+    if (item.total && Number(item.total) !== Number(item.amount)) details += row('Total', formatINR(item.total));
+    if (item.orderId) details += row('Order ID', item.orderId);
+    if (item.utr) details += row('UTR', item.utr);
+    if (item.upi) details += row('UPI', item.upi);
+    if (item.destination) details += row('To UPI', item.destination);
+    if (item.timeStr) details += row('Time', item.timeStr);
+    if (item.note) details += row('Note', item.note);
 
     var ov = document.createElement('div');
     ov.id = 'ppResultOverlay';
     ov.className = 'pp-result-ov';
     ov.innerHTML =
-      '<div class="pp-result-card" role="dialog" aria-modal="true">' +
+      '<div class="pp-result-card">' +
         '<div class="pp-result-icon ' + (isOk ? 'ok' : 'bad') + '">' + (isOk ? CHECK : CROSS) + '</div>' +
         '<h2 class="pp-result-title">' + esc(title) + '</h2>' +
         '<p class="pp-result-sub">' + esc(sub) + '</p>' +
@@ -123,102 +129,179 @@
       '</div>';
     document.body.appendChild(ov);
 
-    function close() {
+    document.getElementById('ppResultOkBtn').onclick = function () {
       markSeen(item.id);
+      removeWatch(item.kind + ':' + (item.orderId || ''));
       if (ov.parentNode) ov.parentNode.removeChild(ov);
       try { if (typeof loadDashboard === 'function') loadDashboard(); } catch (_) {}
-      setTimeout(checkResults, 300);
-    }
-    document.getElementById('ppResultOkBtn').addEventListener('click', close);
+      setTimeout(checkResults, 250);
+    };
   }
 
-  function itemId(kind, row) {
-    var raw = row._id != null ? row._id : row.orderId;
-    if (raw && typeof raw === 'object' && raw.$oid) raw = raw.$oid;
+  function idOf(kind, r) {
+    var raw = r && (r._id != null ? r._id : r.orderId);
+    if (raw && typeof raw === 'object') raw = raw.$oid || raw.toString();
     return kind + ':' + String(raw || '');
   }
 
-  function reviewTime(row) {
-    var t = row.reviewedAt || row.updatedAt || row.createdAt;
-    var ms = new Date(t || 0).getTime();
-    return isNaN(ms) ? 0 : ms;
+  function toItem(kind, r, ok) {
+    var st = String(r.status || '').toLowerCase();
+    var isOk = ok != null ? ok : (st === 'accepted' || st === 'completed' || st === 'success');
+    var at = new Date(r.reviewedAt || r.updatedAt || r.createdAt || Date.now()).getTime();
+    var timeStr = '';
+    try { timeStr = new Date(at).toLocaleString('en-IN'); } catch (_) {}
+    return {
+      id: idOf(kind, r),
+      kind: kind,
+      ok: isOk,
+      amount: kind === 'deposit' ? (r.total || r.amount || 0) : (r.amount || 0),
+      reward: r.reward || 0,
+      total: r.total || r.amount || 0,
+      orderId: r.orderId || '',
+      utr: r.utr || '',
+      upi: r.upiId || '',
+      destination: r.destination || '',
+      note: r.adminNote || r.note || '',
+      timeStr: timeStr,
+      at: at
+    };
   }
 
-  function pickNew(rows, kind) {
-    var seen = getSeen();
-    var now = Date.now();
-    var out = [];
-    (rows || []).forEach(function (r) {
-      if (!r || r.isBonus || r.isReferral || r.isReferralTransfer) return;
-      var st = String(r.status || '').toLowerCase();
-      if (st !== 'accepted' && st !== 'rejected' && st !== 'completed' && st !== 'failed' && st !== 'success') return;
-
-      var id = itemId(kind, r);
-      if (!id || id === kind + ':' || seen[id]) return;
-
-      var at = reviewTime(r);
-      /* skip very old reviews so history doesn't spam */
-      if (at && now - at > MAX_AGE_MS) return;
-
-      var ok = st === 'accepted' || st === 'completed' || st === 'success';
-      var amt = kind === 'deposit' ? (r.total || r.amount || 0) : (r.amount || 0);
-      var timeStr = '';
-      try {
-        if (at) timeStr = new Date(at).toLocaleString('en-IN');
-      } catch (_) {}
-
-      out.push({
-        id: id,
-        kind: kind,
-        ok: ok,
-        amount: amt,
-        reward: r.reward || 0,
-        total: r.total || amt,
-        orderId: r.orderId || '',
-        utr: r.utr || '',
-        upi: r.upiId || '',
-        destination: r.destination || '',
-        note: r.adminNote || r.note || '',
-        timeStr: timeStr,
-        at: at || now
-      });
-    });
-    out.sort(function (a, b) { return b.at - a.at; });
-    return out;
+  function isFinal(st) {
+    st = String(st || '').toLowerCase();
+    return st === 'accepted' || st === 'rejected' || st === 'completed' || st === 'failed' || st === 'success';
+  }
+  function isOkStatus(st) {
+    st = String(st || '').toLowerCase();
+    return st === 'accepted' || st === 'completed' || st === 'success';
   }
 
   async function checkResults() {
     if (!localStorage.getItem('puppypay_token')) return;
     if (document.getElementById('ppResultOverlay')) return;
-    if (typeof walletApiCall !== 'function') return;
+    var fn = api();
+    if (!fn) return;
+
     try {
-      var res = await walletApiCall('/history', 'GET');
+      var res = await fn('/history', 'GET');
       if (!res || !res.ok || !res.data || !res.data.success) return;
-      var deps = pickNew(res.data.deposits || res.data.history || [], 'deposit');
-      var wds = pickNew(res.data.withdrawals || [], 'withdraw');
-      var all = deps.concat(wds).sort(function (a, b) { return b.at - a.at; });
-      if (all.length) showResult(all[0]);
+
+      var deposits = res.data.deposits || res.data.history || [];
+      var withdrawals = res.data.withdrawals || [];
+      var watch = getWatch();
+      var candidates = [];
+
+      /* 1) Watched orderIds that became final */
+      Object.keys(watch).forEach(function (key) {
+        var meta = watch[key];
+        if (!meta || !meta.orderId) return;
+        var list = meta.kind === 'withdraw' ? withdrawals : deposits;
+        for (var i = 0; i < list.length; i++) {
+          var r = list[i];
+          if (String(r.orderId) !== String(meta.orderId)) continue;
+          if (r.isBonus || r.isReferral) continue;
+          if (!isFinal(r.status)) return;
+          var item = toItem(meta.kind, r);
+          if (!isSeen(item.id)) candidates.push(item);
+          return;
+        }
+      });
+
+      /* 2) Any pending in history → keep watching */
+      deposits.forEach(function (r) {
+        if (r.isBonus || r.isReferral) return;
+        var st = String(r.status || '').toLowerCase();
+        if (st === 'pending' || st === 'processing') {
+          addWatch('deposit', r.orderId, { amount: r.total || r.amount });
+        } else if (isFinal(st) && r.orderId) {
+          var it = toItem('deposit', r);
+          /* show if reviewed in last 6 hours and not seen */
+          if (!isSeen(it.id) && Date.now() - it.at < 6 * 60 * 60 * 1000) candidates.push(it);
+        }
+      });
+      withdrawals.forEach(function (r) {
+        var st = String(r.status || '').toLowerCase();
+        if (st === 'pending' || st === 'processing') {
+          addWatch('withdraw', r.orderId, { amount: r.amount });
+        } else if (isFinal(st) && r.orderId) {
+          var it2 = toItem('withdraw', r);
+          if (!isSeen(it2.id) && Date.now() - it2.at < 6 * 60 * 60 * 1000) candidates.push(it2);
+        }
+      });
+
+      /* dedupe by id */
+      var seenIds = {}, uniq = [];
+      candidates.sort(function (a, b) { return b.at - a.at; });
+      candidates.forEach(function (c) {
+        if (seenIds[c.id]) return;
+        seenIds[c.id] = 1;
+        uniq.push(c);
+      });
+
+      if (uniq.length) showResult(uniq[0]);
     } catch (e) {
-      try { console.warn('ppCheckOrderResults', e); } catch (_) {}
+      try { console.warn('[pp-result]', e); } catch (_) {}
     }
   }
 
+  /* Intercept API: when user submits deposit/withdraw, start watching that orderId */
+  function installIntercept() {
+    var original = window.__puppypayWalletApiCall || window.walletApiCall;
+    if (!original || original._ppResultWrapped) return;
+    var wrapped = async function (path, method, body) {
+      var res = await original(path, method, body);
+      try {
+        if (res && res.ok && res.data && res.data.success) {
+          if (String(path).indexOf('/deposit') === 0 && method === 'POST') {
+            var d = res.data.deposit || {};
+            var oid = d.orderId || (body && body.orderId);
+            addWatch('deposit', oid, { amount: d.total || d.amount });
+          }
+          if (String(path).indexOf('/withdraw') === 0 && method === 'POST') {
+            var w = res.data.withdrawal || {};
+            addWatch('withdraw', w.orderId, { amount: w.amount });
+          }
+        }
+      } catch (_) {}
+      return res;
+    };
+    wrapped._ppResultWrapped = true;
+    window.__puppypayWalletApiCall = wrapped;
+    window.walletApiCall = wrapped;
+  }
+
   function boot() {
-    /* clear old v1 seed that blocked popups */
-    try { localStorage.removeItem('puppypay_result_seeded'); } catch (_) {}
+    installIntercept();
     checkResults();
     setInterval(checkResults, POLL_MS);
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') checkResults();
     });
-    window.addEventListener('focus', function () { checkResults(); });
+    window.addEventListener('focus', checkResults);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 800); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 600); });
   } else {
-    setTimeout(boot, 800);
+    setTimeout(boot, 600);
   }
 
   window.ppCheckOrderResults = checkResults;
+  /* debug helper: window.ppTestResult({ok:true,kind:'deposit',amount:500,orderId:'TEST'}) */
+  window.ppTestResult = function (opts) {
+    showResult({
+      id: 'test:' + Date.now(),
+      kind: (opts && opts.kind) || 'deposit',
+      ok: !(opts && opts.ok === false),
+      amount: (opts && opts.amount) || 500,
+      reward: (opts && opts.reward) || 25,
+      total: (opts && opts.total) || 525,
+      orderId: (opts && opts.orderId) || 'TEST123',
+      utr: (opts && opts.utr) || '123456789012',
+      upi: (opts && opts.upi) || 'user@ybl',
+      note: (opts && opts.note) || '',
+      timeStr: new Date().toLocaleString('en-IN'),
+      at: Date.now()
+    });
+  };
 })();
