@@ -27,7 +27,41 @@ function handleAuthFailure(data) {
 
 window.__puppypayHandleAuthFailure = handleAuthFailure;
 
+/** Block / Suspend / Global kill handling from API responses */
 function maybeLock(status, data) {
+  if (!data) return false;
+  var code = data.code || '';
+
+  // Personal block → same full-screen as global kill (this user only)
+  if (code === 'USER_KILLED' || (status === 403 && /not available right now/i.test(String(data.message || '')))) {
+    try {
+      localStorage.removeItem('puppypay_token');
+      localStorage.removeItem('puppypay_user');
+    } catch (_) {}
+    if (typeof window.__puppypayShowPersonalKill === 'function') {
+      window.__puppypayShowPersonalKill();
+    } else if (typeof window.__puppypayShowKillOverlay === 'function') {
+      window.__puppypayShowKillOverlay();
+    }
+    return true;
+  }
+
+  // Suspend → logout + suspended message on login screen
+  if (code === 'ACCOUNT_SUSPENDED') {
+    try {
+      localStorage.removeItem('puppypay_token');
+      localStorage.removeItem('puppypay_user');
+    } catch (_) {}
+    window.__dashboard = null;
+    if (typeof showView === 'function') showView('login');
+    if (typeof showToast === 'function') {
+      showToast(data.message || 'Your account has been suspended. Contact support.', 'error');
+    }
+    var errEl = document.getElementById('loginError');
+    if (errEl) errEl.textContent = data.message || 'Your account has been suspended. Contact support.';
+    return true;
+  }
+
   if (window.__puppypayHandleApiLock && window.__puppypayHandleApiLock(status, data)) return true;
   return false;
 }
