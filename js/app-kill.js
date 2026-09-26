@@ -1,12 +1,17 @@
-/* PuppyPay — global kill switch overlay (polls public /api/app-status) */
+/* PuppyPay — global + personal kill overlay */
 (function appKillWatch() {
   var API_BASE = (typeof window !== 'undefined' && window.PP_API)
     ? String(window.PP_API).replace(/\/$/, '')
     : 'https://puppy-pay-backend.vercel.app/api';
   var overlay = null;
+  var personalKill = false;
 
-  function showDead() {
-    if (overlay && document.body.contains(overlay)) return;
+  function showDead(opts) {
+    opts = opts || {};
+    if (overlay && document.body.contains(overlay) && !opts.force) return;
+    if (overlay) {
+      try { overlay.remove(); } catch (_) {}
+    }
     overlay = document.createElement('div');
     overlay.id = 'ppKillOverlay';
     overlay.setAttribute('style',
@@ -24,11 +29,18 @@
   }
 
   function hideDead() {
+    if (personalKill) return; // stay locked for blocked user until refresh after unblock
     if (overlay) {
       try { overlay.remove(); } catch (_) {}
       overlay = null;
     }
   }
+
+  window.__puppypayShowKillOverlay = function () { showDead({ force: true }); };
+  window.__puppypayShowPersonalKill = function () {
+    personalKill = true;
+    showDead({ force: true });
+  };
 
   async function check() {
     try {
@@ -36,9 +48,7 @@
       var data = await res.json();
       if (data && data.isAlive === false) showDead();
       else hideDead();
-    } catch (_) {
-      /* fail open — do not brick app on network error */
-    }
+    } catch (_) {}
   }
 
   if (document.readyState === 'loading') {
