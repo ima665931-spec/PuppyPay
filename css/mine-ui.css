@@ -73,10 +73,6 @@
   display: block;
 }
 .avatar-btn { padding: 0; overflow: hidden; }
-.bonus-card {
-  background: linear-gradient(160deg, #ffffff 0%, #fef3c7 50%, #fde68a 100%) !important;
-  border: 1.5px solid #fbbf24 !important;
-}
 .profile-card {
   display: flex;
   align-items: center;
@@ -91,4 +87,120 @@
   text-align: left;
   background: transparent;
   border: none;
+}
+
+/* Daily Bonus — polished */
+.bonus-hero {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 28px 20px 24px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 45%, #fde68a 100%);
+  border: 1.5px solid #fbbf24;
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.18);
+  margin-bottom: 16px;
+}
+.bonus-hero-glow {
+  position: absolute;
+  top: -40px; left: 50%;
+  transform: translateX(-50%);
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.45), transparent 70%);
+  pointer-events: none;
+}
+.bonus-icon-wrap {
+  position: relative;
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.bonus-title {
+  position: relative;
+  font-size: 20px;
+  font-weight: 800;
+  color: #92400e;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+.bonus-sub {
+  position: relative;
+  font-size: 13px;
+  color: #a16207;
+  margin: 0 0 14px;
+  line-height: 1.4;
+}
+.bonus-amount {
+  position: relative;
+  display: inline-block;
+  font-size: 32px;
+  font-weight: 800;
+  color: #b45309;
+  background: rgba(255,255,255,0.65);
+  padding: 6px 18px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  letter-spacing: -0.03em;
+}
+.bonus-status {
+  position: relative;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: #78716c;
+}
+.bonus-status.ready { color: #16a34a; }
+.bonus-status.done { color: #059669; }
+.bonus-claim-btn {
+  position: relative;
+  background: linear-gradient(180deg, #f59e0b, #d97706) !important;
+  box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35) !important;
+  border: none !important;
+  font-weight: 800 !important;
+}
+.bonus-claim-btn.claimed,
+.bonus-claim-btn:disabled {
+  opacity: 0.7;
+  background: linear-gradient(180deg, #a8a29e, #78716c) !important;
+  box-shadow: none !important;
+}
+.bonus-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bonus-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+}
+.bonus-tip > span {
+  width: 28px; height: 28px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #b45309;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.bonus-tip b {
+  display: block;
+  font-size: 13px;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+.bonus-tip p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.35;
 }
