@@ -158,13 +158,14 @@
     );
   };
 
-  /** HOT = amount between ₹400 and ₹2000 only, up to 7 cards, highest first */
+  /** HOT = ₹400–₹2000 only, up to 7 cards, sorted small → large (same as main All) */
   function getHotOrders(orders) {
     var list = (orders || []).filter(function (o) {
       var a = Number(o.amount) || 0;
       return a >= HOT_MIN && a <= HOT_MAX;
     });
-    list.sort(function (a, b) { return (Number(b.amount) || 0) - (Number(a.amount) || 0); });
+    // Ascending: smallest on top, largest at bottom
+    list.sort(function (a, b) { return (Number(a.amount) || 0) - (Number(b.amount) || 0); });
     return list.slice(0, HOT_LIMIT).map(function (o) {
       return Object.assign({}, o, { isHot: true });
     });
