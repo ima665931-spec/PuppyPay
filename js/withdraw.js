@@ -16,14 +16,22 @@
 
   function detectUpiBrand(upi) {
     const h = String(upi || '').toLowerCase().split('@')[1] || '';
-    if (['ybl', 'ibl', 'axl', 'phonepe'].some((x) => h.includes(x))) return 'phonepe';
-    if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'okindus', 'google'].some((x) => h.includes(x))) return 'gpay';
-    if (h.includes('paytm') || h.startsWith('pt') || h === 'ptys') return 'paytm';
-    if (h.includes('apl') || h.includes('amazon')) return 'amazon';
-    if (h.includes('ikwik') || h.includes('mobikwik')) return 'mobikwik';
-    if (h.includes('freecharge')) return 'freecharge';
-    if (h.includes('navi')) return 'navi';
-    if (h.includes('upi') || h.includes('axisbank') || h.includes('boi') || h.includes('sbi') || h.includes('pnb') || h.includes('icici')) return 'bhim';
+    // PhonePe
+    if (['ybl', 'ibl', 'axl', 'phonepe'].some((x) => h === x || h.includes(x))) return 'phonepe';
+    // Google Pay
+    if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'okindus', 'okkotak', 'google', 'gpay'].some((x) => h === x || h.includes(x))) return 'gpay';
+    // Paytm
+    if (h.includes('paytm') || h === 'pty' || h === 'ptys' || h.startsWith('pt')) return 'paytm';
+    // Amazon Pay
+    if (h.includes('apl') || h.includes('amazon') || h === 'yapl') return 'amazon';
+    // MobiKwik — @mbk is official handle
+    if (h === 'mbk' || h.includes('mobikwik') || h.includes('ikwik') || h === 'mk') return 'mobikwik';
+    // Freecharge
+    if (h.includes('freecharge') || h === 'freecharge' || h === 'fchr') return 'freecharge';
+    // Navi
+    if (h.includes('navi') || h === 'navi') return 'navi';
+    // BHIM / banks
+    if (h.includes('upi') || h.includes('axisbank') || h.includes('boi') || h.includes('sbi') || h.includes('pnb') || h.includes('icici') || h.includes('hdfcbank') || h.includes('yesbank') || h.includes('kotak') || h === 'bhim') return 'bhim';
     return 'generic';
   }
 
