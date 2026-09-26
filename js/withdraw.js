@@ -16,20 +16,20 @@
 
   function detectUpiBrand(upi) {
     const h = String(upi || '').toLowerCase().split('@')[1] || '';
-    // PhonePe
-    if (['ybl', 'ibl', 'axl', 'phonepe'].some((x) => h === x || h.includes(x))) return 'phonepe';
+    // PhonePe — ybl, ibl, axl are official PhonePe handles
+    if (h === 'ybl' || h === 'ibl' || h === 'axl' || h === 'phonepe' || h.includes('phonepe')) return 'phonepe';
     // Google Pay
-    if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'okindus', 'okkotak', 'google', 'gpay'].some((x) => h === x || h.includes(x))) return 'gpay';
+    if (['okaxis', 'oksbi', 'okhdfcbank', 'okicici', 'okyesbank', 'okindus', 'okkotak', 'google', 'gpay'].some((x) => h === x || h.startsWith(x))) return 'gpay';
     // Paytm
     if (h.includes('paytm') || h === 'pty' || h === 'ptys' || h.startsWith('pt')) return 'paytm';
     // Amazon Pay
     if (h.includes('apl') || h.includes('amazon') || h === 'yapl') return 'amazon';
-    // MobiKwik — @mbk is official handle
+    // MobiKwik
     if (h === 'mbk' || h.includes('mobikwik') || h.includes('ikwik') || h === 'mk') return 'mobikwik';
     // Freecharge
-    if (h.includes('freecharge') || h === 'freecharge' || h === 'fchr') return 'freecharge';
+    if (h.includes('freecharge') || h === 'fchr') return 'freecharge';
     // Navi
-    if (h.includes('navi') || h === 'navi') return 'navi';
+    if (h.includes('navi')) return 'navi';
     // BHIM / banks
     if (h.includes('upi') || h.includes('axisbank') || h.includes('boi') || h.includes('sbi') || h.includes('pnb') || h.includes('icici') || h.includes('hdfcbank') || h.includes('yesbank') || h.includes('kotak') || h === 'bhim') return 'bhim';
     return 'generic';
@@ -47,6 +47,20 @@
     return 'UPI';
   }
 
+  // Reliable inline SVGs when asset missing / broken (esp. PhonePe 747KB bad file)
+  const BRAND_SVG = {
+    phonepe:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44">' +
+      '<rect width="44" height="44" rx="12" fill="#5f259f"/>' +
+      '<text x="22" y="28" text-anchor="middle" fill="#fff" font-size="15" font-weight="800" font-family="system-ui,sans-serif">Pe</text>' +
+      '</svg>',
+    gpay:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44">' +
+      '<rect width="44" height="44" rx="12" fill="#fff"/>' +
+      '<text x="22" y="28" text-anchor="middle" fill="#4285F4" font-size="13" font-weight="800" font-family="system-ui,sans-serif">G</text>' +
+      '</svg>',
+  };
+
   const UPI_LOGO = {
     phonepe: 'assets/upi-phonepe.png',
     gpay: 'assets/upi-gpay.png',
@@ -60,9 +74,15 @@
   };
 
   function brandLogo(b) {
+    // PhonePe asset is oversized/wrong — always use clean purple SVG
+    if (b === 'phonepe') {
+      return BRAND_SVG.phonepe;
+    }
     const src = UPI_LOGO[b] || UPI_LOGO.generic;
-    return '<img src="' + src + '" alt="" width="44" height="44" ' +
-      'onerror="this.onerror=null;this.src=\'assets/upi-default.png\'">';
+    const fallback = BRAND_SVG[b]
+      ? "this.onerror=null;this.outerHTML='" + BRAND_SVG[b].replace(/'/g, "\\'") + "'"
+      : "this.onerror=null;this.src='assets/upi-default.png'";
+    return '<img src="' + src + '" alt="" width="44" height="44" onerror="' + fallback + '">';
   }
 
   function getStoredName() {
