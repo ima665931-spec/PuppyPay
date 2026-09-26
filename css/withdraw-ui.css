@@ -298,30 +298,39 @@
 .sell-upi-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
+.sell-upi-edit,
 .sell-upi-del {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 18px;
-  line-height: 1;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.04);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   padding: 0;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.sell-upi-edit:active {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
 }
 .sell-upi-del:active {
-  color: var(--danger);
-  background: var(--danger-soft);
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
 }
 
 .sell-add-upi {
   display: flex;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 0;
+  margin-bottom: 4px;
 }
 .sell-add-upi input {
   flex: 1;
