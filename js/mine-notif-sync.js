@@ -1,4 +1,4 @@
-/* PuppyPay — notif cards (thin/tall) + Android permission on open */
+/* PuppyPay — notif cards = order-card size + Android permission */
 (function () {
   var LIST_KEY = 'puppypay_notifications';
   var SHOWN_KEY = 'puppypay_notif_shown';
@@ -35,7 +35,7 @@
     }
   }
 
-  var BELL = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+  var BELL = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
 
   function getList() {
     try { return JSON.parse(localStorage.getItem(LIST_KEY) || '[]'); } catch (_) { return []; }
@@ -80,33 +80,30 @@
     if (old) old.remove();
     var style = document.createElement('style');
     style.id = 'pp-notif-styles';
+    /* Match .order-card: padding 16px, radius 16px, gap 12px, full width */
     style.textContent = [
-      /* narrower list — more side margin = kam chodai */
-      '.pp-nlist{display:flex;flex-direction:column;gap:12px;padding:6px 22px 28px;max-width:300px;margin:0 auto;width:100%;box-sizing:border-box;}',
-      /* taller + thinner card */
-      '.pp-ncard{position:relative;display:flex;gap:10px;align-items:flex-start;',
-      'padding:20px 12px 20px 12px;min-height:96px;',
-      'background:#fff;border:1px solid #e8eef5;border-radius:14px;',
-      'box-shadow:0 2px 10px rgba(15,23,42,0.05);overflow:hidden;}',
-      '.pp-ncard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;',
-      'background:linear-gradient(180deg,#3b82f6,#60a5fa);}',
-      /* chhota icon */
-      '.pp-nicon{flex-shrink:0;width:28px;height:28px;border-radius:8px;margin-top:2px;',
-      'background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;}',
-      '.pp-nbody{flex:1;min-width:0;}',
-      '.pp-nrow{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;}',
-      '.pp-ntitle{font-size:13.5px;font-weight:700;color:#0f172a;line-height:1.35;flex:1;}',
-      '.pp-ntime{font-size:10.5px;font-weight:600;color:#94a3b8;flex-shrink:0;padding-top:2px;}',
-      '.pp-nmsg{font-size:12.5px;line-height:1.55;color:#64748b;word-break:break-word;}',
-      '.pp-nempty{text-align:center;padding:48px 20px;max-width:280px;margin:0 auto;}',
-      '.pp-nempty-ic{width:40px;height:40px;margin:0 auto 12px;border-radius:10px;',
-      'background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;}',
-      '.pp-nperm{margin:0 22px 14px;padding:14px;border-radius:14px;max-width:300px;',
-      'margin-left:auto;margin-right:auto;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;box-sizing:border-box;}',
-      '.pp-nperm-title{font-size:13px;font-weight:700;color:#1e40af;margin:0 0 4px;}',
+      '.pp-nlist{display:flex;flex-direction:column;gap:12px;padding:0 0 24px;width:100%;box-sizing:border-box;}',
+      '.pp-ncard{display:flex;align-items:center;gap:14px;padding:16px;',
+      'background:linear-gradient(160deg,#ffffff 0%,#eff6ff 45%,#dbeafe 100%);',
+      'border:1.5px solid #93c5fd;border-radius:16px;',
+      'box-shadow:0 6px 18px rgba(37,99,235,0.1),0 2px 6px rgba(15,23,42,0.04),inset 0 1px 0 rgba(255,255,255,0.9);}',
+      '.pp-nicon{flex-shrink:0;width:44px;height:44px;border-radius:12px;',
+      'background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;}',
+      '.pp-nbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}',
+      '.pp-nrow{display:flex;align-items:center;justify-content:space-between;gap:8px;}',
+      '.pp-ntitle{font-size:15px;font-weight:800;color:#0f172a;line-height:1.2;letter-spacing:-.02em;flex:1;',
+      'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.pp-ntime{font-size:11px;font-weight:600;color:#94a3b8;flex-shrink:0;}',
+      '.pp-nmsg{font-size:13px;line-height:1.45;color:#64748b;word-break:break-word;}',
+      '.pp-nempty{text-align:center;padding:48px 20px;}',
+      '.pp-nempty-ic{width:48px;height:48px;margin:0 auto 12px;border-radius:14px;',
+      'background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;}',
+      '.pp-nperm{margin:0 0 14px;padding:14px 16px;border-radius:16px;',
+      'background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #93c5fd;}',
+      '.pp-nperm-title{font-size:14px;font-weight:800;color:#1e40af;margin:0 0 4px;}',
       '.pp-nperm-desc{font-size:12px;color:#3b82f6;margin:0 0 12px;line-height:1.4;}',
       '.pp-nperm-btns{display:flex;gap:8px;flex-wrap:wrap;}',
-      '.pp-nperm-btns button{border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}',
+      '.pp-nperm-btns button{border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}',
       '.pp-nperm-allow{background:#2563eb;color:#fff;}',
       '.pp-nperm-later{background:#fff;color:#64748b;border:1px solid #e2e8f0 !important;}',
       '.pp-nperm-never{background:transparent;color:#94a3b8;padding:8px 6px;}'
@@ -280,7 +277,6 @@
 
     list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div></div>';
 
-    /* Auto-ask Android once when user opens Notifications (permission still default) */
     if ('Notification' in window && Notification.permission === 'default' && localStorage.getItem(NEVER_KEY) !== '1') {
       requestAndroidPermission();
     }
