@@ -1,6 +1,6 @@
-/* Order commission + Orders P0+P1 UI
-   First order: 10% | After: 4.9% + Rs4
-   Chips: All / High / Low / New | Tabs: Available / My Orders | Timeline */
+/* Order commission + Orders UI
+   First order: 10% | Standard: 4.9% + Rs4 | HOT: 5.9% + Rs4
+   Chips: All / High / Low / New / HOT | Tabs: Available / My Orders */
 (function () {
   var orderChip = 'all';
   var ordersTab = 'available';
@@ -23,15 +23,24 @@
     return s.length <= 10 ? s : s.slice(0, 3) + '\u2026' + s.slice(-4);
   }
 
-  function calcReward(amt) {
+  function calcReward(amt, isHot) {
     amt = Number(amt) || 0;
     if (!firstDone()) {
-      return { rate: '10', reward: Math.round(amt * 0.10 * 100) / 100, isFirst: true };
+      return { rate: '10', reward: Math.round(amt * 0.10 * 100) / 100, isFirst: true, isHot: false };
+    }
+    if (isHot) {
+      return {
+        rate: '5.9',
+        reward: Math.round((Math.round(amt * 0.059 * 100) / 100 + 4) * 100) / 100,
+        isFirst: false,
+        isHot: true
+      };
     }
     return {
       rate: '4.9',
       reward: Math.round((Math.round(amt * 0.049 * 100) / 100 + 4) * 100) / 100,
-      isFirst: false
+      isFirst: false,
+      isHot: false
     };
   }
 
@@ -43,13 +52,9 @@
       var returned = list.length;
       var total = Number(meta.total);
       if (!Number.isFinite(total) || total <= 0) total = returned;
-      if (returned >= 50 && total <= returned) {
-        avail.textContent = '50+';
-      } else if (total > returned) {
-        avail.textContent = String(total);
-      } else {
-        avail.textContent = String(returned);
-      }
+      if (returned >= 50 && total <= returned) avail.textContent = '50+';
+      else if (total > returned) avail.textContent = String(total);
+      else avail.textContent = String(returned);
     }
 
     var todayEl = document.getElementById('ordersTodayEarn');
@@ -85,17 +90,30 @@
     }
   }
 
+  function ensureHotChip() {
+    var chips = document.getElementById('orderChips');
+    if (!chips) return;
+    if (chips.querySelector('[data-chip="hot"]')) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'order-chip hot-chip';
+    btn.setAttribute('data-chip', 'hot');
+    btn.innerHTML = '🔥 HOT';
+    chips.appendChild(btn);
+  }
+
   window.renderOrderCard = function (o, opts) {
     var oid = o.orderId || o.id || '';
     var amt = Number(o.amount) || 0;
+    var isHot = !!(opts && opts.isHot) || !!(o.isHot);
     var isFirst, rate, reward;
 
-    if (o.reward != null && o.profitRate != null) {
+    if (o.reward != null && o.profitRate != null && !isHot) {
       rate = (o.profitRate * 100).toFixed(1);
       reward = o.reward;
       isFirst = false;
     } else {
-      var c = calcReward(amt);
+      var c = calcReward(amt, isHot);
       rate = c.rate;
       reward = c.reward;
       isFirst = c.isFirst;
@@ -103,17 +121,20 @@
 
     var topClass = opts && opts.isTop ? ' order-card-top' : '';
     var firstBadge = isFirst ? '<span class="order-first-badge">FIRST +10%</span>' : '';
+    var hotBadge = isHot && !isFirst ? '<span class="order-hot-badge">HOT 5.9%</span>' : '';
     var extra = isFirst ? '' : '<span class="order-profit-extra">+\u20b94</span>';
     var buying = typeof buyingOrderId !== 'undefined' && buyingOrderId === oid;
     var amtStr = typeof formatINR === 'function' ? formatINR(amt) : ('\u20b9' + amt);
     var rewStr = typeof formatINR === 'function' ? formatINR(reward) : ('\u20b9' + reward);
 
     return (
-      '<div class="order-card' + topClass + (isFirst ? ' order-card-first' : '') + '" data-order-id="' + oid + '">' +
+      '<div class="order-card' + topClass + (isFirst ? ' order-card-first' : '') + (isHot ? ' order-card-hot' : '') + '" data-order-id="' + oid + '">' +
         '<div class="order-card-left">' +
           '<div class="order-amount-row">' +
             '<div class="order-amount">' + amtStr + '</div>' +
+            '<span class="order-via-upi">via UPI</span>' +
             firstBadge +
+            hotBadge +
           '</div>' +
           '<div class="order-id-row">' +
             '<span>ID ' + shortId(oid) + '</span>' +
@@ -134,8 +155,19 @@
     );
   };
 
+  function getHotOrders(orders) {
+    var list = (orders || []).slice();
+    list.sort(function (a, b) { return (Number(b.amount) || 0) - (Number(a.amount) || 0); });
+    return list.slice(0, 7).map(function (o) {
+      return Object.assign({}, o, { isHot: true });
+    });
+  }
+
   function applyChips(orders) {
     var list = (orders || []).slice();
+    if (orderChip === 'hot') {
+      return getHotOrders(list);
+    }
     if (orderChip === 'high') {
       list.sort(function (a, b) { return (Number(b.amount) || 0) - (Number(a.amount) || 0); });
     } else if (orderChip === 'low') {
@@ -167,8 +199,9 @@
       list.innerHTML = '<div class="empty-state"><p>No orders in this range</p><p class="empty-hint">Pull to refresh or clear filters</p></div>';
       return;
     }
+    var isHotMode = orderChip === 'hot';
     list.innerHTML = filtered.map(function (o, i) {
-      return window.renderOrderCard(o, { isTop: i === 0 });
+      return window.renderOrderCard(o, { isTop: i === 0, isHot: isHotMode || o.isHot });
     }).join('');
   };
 
@@ -195,6 +228,14 @@
       if (filterBar) filterBar.style.display = 'none';
       loadMyOrders();
     }
+  }
+
+  function statusLabel(st) {
+    st = String(st || '').toLowerCase();
+    if (st.indexOf('accept') >= 0 || st === 'completed' || st === 'done' || st === 'ok') return { label: 'Completed', badge: 'ok' };
+    if (st.indexOf('reject') >= 0 || st.indexOf('fail') >= 0 || st.indexOf('cancel') >= 0) return { label: 'Failed', badge: 'bad' };
+    if (st.indexOf('pend') >= 0 || st.indexOf('process') >= 0 || st.indexOf('submit') >= 0) return { label: 'Processing', badge: 'wait' };
+    return { label: 'Processing', badge: 'wait' };
   }
 
   function timelineHtml(badge) {
@@ -251,22 +292,18 @@
       }
 
       list.innerHTML = items.slice(0, 50).map(function (o) {
-        var st = String(o.status || 'done').toLowerCase();
-        var badge =
-          st.indexOf('pend') >= 0 || st.indexOf('process') >= 0 ? 'wait' :
-          st.indexOf('fail') >= 0 || st.indexOf('cancel') >= 0 ? 'bad' : 'ok';
-        var label = badge === 'wait' ? 'Pending' : badge === 'bad' ? 'Failed' : 'Completed';
+        var sl = statusLabel(o.status);
         var amtStr = typeof formatINR === 'function' ? formatINR(o.amount) : ('\u20b9' + (o.amount || 0));
         var rew = o.reward != null
           ? (typeof formatINR === 'function' ? formatINR(o.reward) : ('\u20b9' + o.reward))
           : '';
         var time = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        var tl = timelineHtml(badge);
+        var tl = timelineHtml(sl.badge);
         return (
           '<div class="my-order-card">' +
             '<div class="my-order-top">' +
-              '<div class="my-order-amt">' + amtStr + '</div>' +
-              '<span class="history-status ' + badge + '">' + label + '</span>' +
+              '<div class="my-order-amt">' + amtStr + ' <span class="order-via-upi">via UPI</span></div>' +
+              '<span class="history-status ' + sl.badge + '">' + sl.label + '</span>' +
             '</div>' +
             '<div class="my-order-meta">' +
               '<span>ID ' + shortId(o.orderId) + '</span>' +
@@ -283,20 +320,23 @@
   }
 
   function wireUI() {
+    ensureHotChip();
+
     document.querySelectorAll('.orders-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
         setTab(btn.getAttribute('data-otab') || 'available');
       });
     });
 
-    document.querySelectorAll('.order-chip').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        orderChip = btn.getAttribute('data-chip') || 'all';
-        document.querySelectorAll('.order-chip').forEach(function (b) {
-          b.classList.toggle('active', b === btn);
-        });
-        if (typeof allOrdersCache !== 'undefined') window.paintOrders(allOrdersCache);
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.order-chip');
+      if (!btn || !btn.getAttribute('data-chip')) return;
+      if (!document.getElementById('orderChips') || !document.getElementById('orderChips').contains(btn)) return;
+      orderChip = btn.getAttribute('data-chip') || 'all';
+      document.querySelectorAll('.order-chip').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
       });
+      if (typeof allOrdersCache !== 'undefined') window.paintOrders(allOrdersCache);
     });
 
     var ol = document.getElementById('ordersList');
@@ -320,6 +360,20 @@
       });
     }
   }
+
+  // Inject HOT chip styles
+  (function () {
+    if (document.getElementById('pp-hot-css')) return;
+    var s = document.createElement('style');
+    s.id = 'pp-hot-css';
+    s.textContent = '.order-via-upi{font-size:11px;font-weight:600;color:#64748b;margin-left:6px;background:#f1f5f9;padding:2px 7px;border-radius:6px}' +
+      '.order-hot-badge{font-size:10px;font-weight:800;color:#fff;background:linear-gradient(135deg,#f59e0b,#ef4444);padding:2px 8px;border-radius:6px;margin-left:6px}' +
+      '.order-card-hot{border:1.5px solid rgba(245,158,11,.4);box-shadow:0 4px 16px rgba(245,158,11,.12)}' +
+      '.order-chip.hot-chip{background:linear-gradient(135deg,#fef3c7,#fed7aa);color:#b45309;font-weight:800;border-color:#fbbf24}' +
+      '.order-chip.hot-chip.active{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;border-color:transparent}' +
+      '.order-amount-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px}';
+    document.head.appendChild(s);
+  })();
 
   setTimeout(function () {
     if (typeof loadDashboard === 'function') {
