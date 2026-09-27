@@ -52,6 +52,23 @@ button, input, select, textarea { font-family: inherit; }
 img { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
 
+/* Native app feel — disable text selection & long-press */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default;
+}
+
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
