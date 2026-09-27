@@ -1,0 +1,28 @@
+{
+  "id": "https://puppy-pay.vercel.app",
+  "name": "PuppyPay",
+  "short_name": "PuppyPay",
+  "description": "Smart Fast Friendly payments wallet",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "dir": "ltr",
+  "lang": "en",
+  "theme_color": "#1E3A8A",
+  "background_color": "#0F172A",
+  "icons": [
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
