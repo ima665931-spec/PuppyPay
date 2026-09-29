@@ -201,9 +201,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', function () {
 document.getElementById('menuWithdraw')?.addEventListener('click', function () { showView('withdraw'); });
 document.getElementById('menuSupport')?.addEventListener('click', function () { window.open('https://t.me/PuppyPayOfficialSupport', '_blank'); });
 document.getElementById('supportFab')?.addEventListener('click', function () { window.open('https://t.me/PuppyPayOfficialSupport', '_blank'); });
-document.getElementById('menuDownloadApk')?.addEventListener('click', function () {
-  showToast('APK download coming soon', 'success');
-});
+// Download APK is now handled by app-update.js + mine.js
 document.getElementById('avatarBtn')?.addEventListener('click', function () { showView('mine'); });
 
 function formatINR(n) {
@@ -480,33 +478,10 @@ document.getElementById('copyRefBtn')?.addEventListener('click', function () {
     var home = document.getElementById('homeView');
     fab.style.display = (home && home.classList.contains('active')) ? 'flex' : 'none';
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(apply, 50); });
-  else setTimeout(apply, 50);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
+  else apply();
+  document.addEventListener('click', function (e) {
+    var item = e.target.closest && e.target.closest('.nav-item');
+    if (item) setTimeout(apply, 50);
+  }, true);
 })();
-
-/* Professional toast + modal styles */
-(function injectToastStyles() {
-  if (document.getElementById('pp-toast-css')) return;
-  var s = document.createElement('style');
-  s.id = 'pp-toast-css';
-  s.textContent = '.pp-toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);z-index:99999;opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.22,1,.36,1);width:min(340px,calc(100vw - 32px))}' +
-    '.pp-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}' +
-    '.pp-toast-inner{display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:16px;background:rgba(15,23,42,.94);color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 40px rgba(15,23,42,.35);backdrop-filter:blur(12px)}' +
-    '.pp-toast-inner.success{background:linear-gradient(135deg,#059669,#10b981)}' +
-    '.pp-toast-inner.error{background:linear-gradient(135deg,#dc2626,#ef4444)}' +
-    '.pp-toast-icon{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}' +
-    '.pp-modal-overlay{position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .2s}' +
-    '.pp-modal-overlay.show{opacity:1}' +
-    '.pp-modal{background:#fff;border-radius:20px;padding:24px;width:min(340px,100%);box-shadow:0 24px 60px rgba(15,23,42,.3);transform:scale(.94);transition:transform .2s}' +
-    '.pp-modal-overlay.show .pp-modal{transform:scale(1)}' +
-    '.pp-modal-title{font-size:18px;font-weight:800;margin-bottom:8px;color:#0f172a}' +
-    '.pp-modal-body{font-size:14px;color:#64748b;line-height:1.5;margin-bottom:20px}' +
-    '.pp-modal-actions{display:flex;gap:10px}' +
-    '.pp-modal-actions .btn{flex:1}';
-  document.head.appendChild(s);
-})();
-
-window.showToast = showToast;
-window.showAppModal = showAppModal;
-window.showView = showView;
-window.goBack = goBack;
