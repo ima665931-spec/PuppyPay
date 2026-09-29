@@ -425,7 +425,15 @@
       window.open('https://t.me/PuppyPayOfficialSupport', '_blank');
     });
     bindOnce(document.getElementById('menuDownloadApk'), 'click', function () {
-      showToast('APK download coming soon', 'success');
+      if (typeof window.downloadLatestApk === 'function') {
+        window.downloadLatestApk();
+      } else {
+        showToast('Checking for latest APK...', 'success');
+        setTimeout(function () {
+          if (typeof window.downloadLatestApk === 'function') window.downloadLatestApk();
+          else showToast('APK will be available soon', 'error');
+        }, 800);
+      }
     });
     bindOnce(document.getElementById('logoutBtn'), 'click', function () {
       try {
