@@ -485,3 +485,41 @@ document.getElementById('copyRefBtn')?.addEventListener('click', function () {
     if (item) setTimeout(apply, 50);
   }, true);
 })();
+
+/* =========================================================
+   Android hardware BACK button
+   - Goes one step back inside the app
+   - Only exits/minimizes when already on main tab
+   ========================================================= */
+(function setupAndroidBackButton() {
+  function onBack() {
+    if (typeof goBack === 'function' && goBack()) {
+      return; // stayed inside app
+    }
+    // Already on root screen → minimize app (better UX than force close)
+    try {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.minimizeApp();
+      }
+    } catch (e) {}
+  }
+
+  function register() {
+    try {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.addListener('backButton', onBack);
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  // Try immediately + retry a few times (plugin may load late)
+  if (!register()) {
+    var tries = 0;
+    var t = setInterval(function () {
+      tries++;
+      if (register() || tries > 20) clearInterval(t);
+    }, 300);
+  }
+})();
