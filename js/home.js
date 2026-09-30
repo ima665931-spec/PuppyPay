@@ -9,8 +9,9 @@ async function loadDashboard() {
     try { const c = JSON.parse(localStorage.getItem('puppypay_user')||'{}'); c.balance=u.balance; c.name=u.name||c.name; c.appId=u.appId||c.appId; c.referralCode=u.referralCode||c.referralCode; localStorage.setItem('puppypay_user',JSON.stringify(c)); } catch(_){}
     if (typeof populateUserUI === 'function') populateUserUI();
     const bal=document.getElementById('balanceAmount');
-    if(bal&&!window.balanceHidden) bal.textContent=formatINR(u.balance);
-    else if(bal&&window.balanceHidden) bal.dataset.real=formatINR(u.balance);
+    if(bal&&typeof balanceHidden!=='undefined'&&!balanceHidden) bal.textContent=formatINR(u.balance);
+    else if(bal&&typeof balanceHidden!=='undefined'&&balanceHidden) bal.dataset.real=formatINR(u.balance);
+    else if(bal) bal.textContent=formatINR(u.balance);
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('completeOrders',data.stats?.completeOrders??0);
     set('todayBuying',formatINR(data.stats?.todayBuying??0));
@@ -39,42 +40,76 @@ function startOrdersAutoRefresh() {
     if (view && view.classList.contains('active')) loadOrders(true); else stopOrdersAutoRefresh();
   }, 2000);
 }
-function stopOrdersAutoRefresh() {
-  if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; }
+function stopOrdersAutoRefresh() { if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; } }
+function shortOrderId(oid) { const s = String(oid || ''); return s.length <= 10 ? s : s.slice(0, 3) + '\u2026' + s.slice(-4); }
+function renderOrderCard(o, opts) {
+  const oid = o.orderId || o.id || '';
+  const rate = o.profitRate != null ? (o.profitRate * 100).toFixed(1) : '4.9';
+  const reward = o.reward != null ? o.reward : Math.round((Number(o.amount) || 0) * 0.049 * 100) / 100;
+  const topClass = opts && opts.isTop ? ' order-card-top' : '';
+  return '<div class="order-card' + topClass + '" data-order-id="' + oid + '"><div class="order-card-left"><div class="order-amount">' + formatINR(o.amount) + '</div><div class="order-id-row">ID ' + shortOrderId(oid) + '</div><div class="order-profit-row"><span class="order-profit">+' + formatINR(reward) + '</span><span class="order-rate">' + rate + '%</span></div></div><button class="btn btn-primary btn-buy" data-buy="' + oid + '" ' + (buyingOrderId === oid ? 'disabled' : '') + '>' + (buyingOrderId === oid ? '...' : 'Buy') + '</button></div>';
 }
-window.startOrdersAutoRefresh = startOrdersAutoRefresh;
-window.stopOrdersAutoRefresh = stopOrdersAutoRefresh;
-
-async function loadOrders(force) {
+function applyOrderFilter(orders) {
+  let list = orders.slice();
+  const min = Number(orderFilterMin), max = Number(orderFilterMax);
+  if (Number.isFinite(min) && min > 0) list = list.filter(o => Number(o.amount) >= min);
+  if (Number.isFinite(max) && max > 0) list = list.filter(o => Number(o.amount) <= max);
+  list.sort((a, b) => (Number(a.amount) || 0) - (Number(b.amount) || 0));
+  return list;
+}
+function paintOrders(orders) {
   const list = document.getElementById('ordersList');
-  if (!list || ordersLoading) return;
+  if (!list) return;
+  const filtered = applyOrderFilter(orders);
+  if (!filtered.length) { list.innerHTML = '<div class="empty-state"><p>No orders in this range</p></div>'; return; }
+  list.innerHTML = filtered.map((o, i) => renderOrderCard(o, { isTop: i === 0 })).join('');
+}
+async function loadOrders(silent) {
+  if (ordersLoading) return;
   ordersLoading = true;
-  if (!force) list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div></div>';
+  const list = document.getElementById('ordersList');
+  if (!silent && list && !list.querySelector('.order-card')) list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div><p>Loading orders...</p></div>';
   try {
-    const { ok, data } = await walletApiCall('/orders', 'GET');
+    const q = ['renew=1'];
+    if (orderFilterMin) q.push('min=' + encodeURIComponent(orderFilterMin));
+    if (orderFilterMax) q.push('max=' + encodeURIComponent(orderFilterMax));
+    const { ok, data } = await walletApiCall('/orders?' + q.join('&'), 'GET');
     if (!ok || !data?.success) {
-      if (!force) list.innerHTML = '<div class="empty-state"><p>No orders right now</p></div>';
+      if (!silent && list) list.innerHTML = '<div class="empty-state"><p>No orders right now</p></div>';
       return;
     }
-    const orders = data.orders || [];
-    allOrdersCache = orders;
-    if (!orders.length) {
-      list.innerHTML = '<div class="empty-state"><p>No orders available</p></div>';
-      return;
-    }
-    list.innerHTML = orders.map(o => {
-      const id = o.orderId || o._id || '';
-      const amt = formatINR(o.amount || 0);
-      const reward = o.reward != null ? formatINR(o.reward) : '';
-      return '<div class="order-card" data-order-id="' + id + '"><div class="order-amt">' + amt + (reward ? '<span class="order-reward">+' + reward + '</span>' : '') + '</div><button type="button" class="btn btn-primary btn-sm" data-buy="' + id + '">Buy</button></div>';
-    }).join('');
+    allOrdersCache = data.orders || [];
+    paintOrders(allOrdersCache);
   } catch (e) {
-    if (!force) list.innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
+    if (!silent && list) list.innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
   } finally {
     ordersLoading = false;
   }
 }
 window.loadOrders = loadOrders;
+window.startOrdersAutoRefresh = startOrdersAutoRefresh;
+window.stopOrdersAutoRefresh = stopOrdersAutoRefresh;
+window.paintOrders = paintOrders;
+
+(function bindOrderFilters() {
+  const minIn = document.getElementById('orderFilterMin');
+  const maxIn = document.getElementById('orderFilterMax');
+  if (!minIn) return;
+  const apply = () => {
+    orderFilterMin = minIn.value.trim();
+    orderFilterMax = (maxIn && maxIn.value.trim()) || '';
+    if (allOrdersCache.length) paintOrders(allOrdersCache);
+    else loadOrders(false);
+  };
+  document.getElementById('orderFilterBtn')?.addEventListener('click', apply);
+  document.getElementById('orderFilterClear')?.addEventListener('click', () => {
+    minIn.value = '';
+    if (maxIn) maxIn.value = '';
+    orderFilterMin = '';
+    orderFilterMax = '';
+    loadOrders(false);
+  });
+})();
 
 async function loadHistory() {
   const list = document.getElementById('historyList');
@@ -107,52 +142,67 @@ async function loadHistory() {
 }
 window.loadHistory = loadHistory;
 
-let proofDataUrl = null;
 function closePaySheet() {
+  const overlay = document.getElementById('paySheetOverlay');
+  if (overlay) overlay.remove();
   const sheet = document.getElementById('paySheet');
   if (sheet) sheet.classList.remove('show');
-  proofDataUrl = null;
   if (paySheetTimer) { clearInterval(paySheetTimer); paySheetTimer = null; }
+  activePayment = null;
 }
 window.closePaySheet = closePaySheet;
 
 function showPaymentSheet(payment) {
   activePayment = payment;
+  closePaySheet();
   const orderId = payment.orderId;
-  let sheet = document.getElementById('paySheet');
-  if (!sheet) {
-    sheet = document.createElement('div');
-    sheet.id = 'paySheet';
-    sheet.className = 'pay-sheet';
-    document.body.appendChild(sheet);
-  }
-  const amt = formatINR(payment.amount);
-  sheet.innerHTML = `
-    <div class="pay-sheet-backdrop" onclick="closePaySheet()"></div>
-    <div class="pay-sheet-panel">
-      <div class="pay-sheet-handle"></div>
-      <h3>Pay ${amt}</h3>
-      <p class="text-sm text-secondary">Scan QR or pay to UPI · ${payment.validMinutes || 10} min</p>
-      <div class="pay-qr-wrap">${payment.qrImageUrl ? `<img src="${payment.qrImageUrl}" alt="QR">` : ''}</div>
-      <div class="pay-upi">${payment.upiId || ''}</div>
-      <div class="field"><label>UTR (12 digit)</label><div class="input-shell"><input id="payUtrInput" inputmode="numeric" maxlength="12" placeholder="Enter UTR" autocomplete="off"></div></div>
-      <div class="field"><label>Payment screenshot</label><input type="file" id="payProofInput" accept="image/*"><img id="payProofPreview" class="pay-proof-preview" alt=""></div>
-      <button type="button" class="btn btn-primary btn-block" id="paySubmitBtn" disabled>Submit payment</button>
-      <button type="button" class="btn btn-ghost btn-block" onclick="closePaySheet()">Cancel</button>
-    </div>`;
-  sheet.classList.add('show');
-  proofDataUrl = null;
+  const amount = payment.amount;
+  const upiId = payment.upiId || '';
+  const qrUrl = payment.qrImageUrl || '';
+  const expiresAt = payment.expiresAt ? new Date(payment.expiresAt).getTime() : Date.now() + 600000;
+  const overlay = document.createElement('div');
+  overlay.className = 'pay-sheet-overlay';
+  overlay.id = 'paySheetOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:flex-end;justify-content:center;background:rgba(15,23,42,.55)';
+  overlay.innerHTML = '<div class="pay-sheet" id="paySheetInner"><div id="payStep1"><h3>Pay exact amount</h3><div class="pay-sub">Order ' + shortOrderId(orderId) + ' · valid 10 minutes</div><div class="pay-amount">' + formatINR(amount) + '</div><div class="pay-timer" id="payTimer">10:00 left</div><div class="pay-qr-wrap"><img src="' + qrUrl + '" alt="UPI QR" width="220" height="220"></div><div class="pay-note">Scan QR and pay the exact amount shown above</div><div class="pay-actions"><button type="button" class="btn btn-primary btn-block" id="payCompletedBtn">I have completed the order</button><button type="button" class="btn btn-ghost btn-block" id="payCloseBtn">Close</button></div></div><div id="payStep2" class="pay-step2" style="display:none"><h3>Submit proof</h3><div class="pay-sub">Order ' + shortOrderId(orderId) + ' · ' + formatINR(amount) + '</div><div class="field"><label>12-digit UTR (mandatory)</label><input type="tel" id="payUtrInput" maxlength="12" inputmode="numeric" placeholder="123456789012" autocomplete="off"></div><div class="field"><label>Transaction screenshot (mandatory)</label><div class="pay-upload" id="payUploadBox"><input type="file" id="payProofInput" accept="image/*"><strong>Tap to upload screenshot</strong><span>JPG / PNG</span><img class="pay-preview" id="payProofPreview" alt=""></div></div><div class="pay-actions"><button type="button" class="btn btn-primary btn-block btn-submit-pay" id="paySubmitBtn" disabled>Submit payment</button><button type="button" class="btn btn-ghost btn-block" id="payBackBtn">Back to QR</button></div></div></div>';
+  (document.body || document.documentElement).appendChild(overlay);
+  const tick = () => {
+    const left = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+    const m = String(Math.floor(left / 60)).padStart(2, '0'), s = String(left % 60).padStart(2, '0');
+    const el = document.getElementById('payTimer');
+    if (el) el.textContent = left > 0 ? (m + ':' + s + ' left') : 'Expired';
+    if (left <= 0 && paySheetTimer) clearInterval(paySheetTimer);
+  };
+  tick(); paySheetTimer = setInterval(tick, 1000);
+  let proofDataUrl = '';
   const updateSubmit = () => {
     const utr = (document.getElementById('payUtrInput')?.value || '').replace(/\D/g, '');
     const btn = document.getElementById('paySubmitBtn');
     if (btn) btn.disabled = !(utr.length === 12 && proofDataUrl);
   };
-  document.getElementById('payUtrInput')?.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12); updateSubmit(); });
+  document.getElementById('payCloseBtn')?.addEventListener('click', closePaySheet);
+  document.getElementById('payCompletedBtn')?.addEventListener('click', () => {
+    document.getElementById('payStep1').style.display = 'none';
+    document.getElementById('payStep2').style.display = 'block';
+  });
+  document.getElementById('payBackBtn')?.addEventListener('click', () => {
+    document.getElementById('payStep2').style.display = 'none';
+    document.getElementById('payStep1').style.display = 'block';
+  });
+  document.getElementById('payUtrInput')?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 12);
+    updateSubmit();
+  });
   document.getElementById('payProofInput')?.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
     if (file.size > 1.5 * 1024 * 1024) { showToast('Image max 1.5MB', 'error'); return; }
     const reader = new FileReader();
-    reader.onload = () => { proofDataUrl = String(reader.result || ''); const img = document.getElementById('payProofPreview'); if (img) { img.src = proofDataUrl; img.classList.add('show'); } updateSubmit(); };
+    reader.onload = () => {
+      proofDataUrl = String(reader.result || '');
+      const img = document.getElementById('payProofPreview');
+      if (img) { img.src = proofDataUrl; img.style.display = 'block'; }
+      updateSubmit();
+    };
     reader.readAsDataURL(file);
   });
   document.getElementById('paySubmitBtn')?.addEventListener('click', async () => {
@@ -160,10 +210,22 @@ function showPaymentSheet(payment) {
     if (utr.length !== 12 || !proofDataUrl) { showToast('UTR (12 digit) + screenshot required', 'error'); return; }
     const btn = document.getElementById('paySubmitBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
     try {
-      const { ok, data } = await walletApiCall('/deposit', 'POST', { orderId: orderId, utr: utr, proofImage: proofDataUrl, qrLabel: payment.label || payment.upiId || null, upiId: payment.upiId || null });
-      if (ok && data?.success) { showToast('Payment submitted — verifying automatically', 'success'); closePaySheet(); loadDashboard(); }
-      else { showToast(data?.message || 'Submit failed', 'error'); btn.disabled = false; btn.textContent = 'Submit payment'; }
-    } catch (err) { showToast('Network error', 'error'); btn.disabled = false; btn.textContent = 'Submit payment'; }
+      const { ok, data } = await walletApiCall('/deposit', 'POST', {
+        orderId: orderId, utr: utr, proofImage: proofDataUrl,
+        qrLabel: payment.label || payment.upiId || null, upiId: payment.upiId || null
+      });
+      if (ok && data?.success) {
+        showToast('Payment submitted — verifying automatically', 'success');
+        closePaySheet();
+        loadDashboard();
+      } else {
+        showToast(data?.message || 'Submit failed', 'error');
+        btn.disabled = false; btn.textContent = 'Submit payment';
+      }
+    } catch (err) {
+      showToast('Network error', 'error');
+      btn.disabled = false; btn.textContent = 'Submit payment';
+    }
   });
 }
 window.showPaymentSheet = showPaymentSheet;
@@ -212,6 +274,5 @@ async function buyOrder(orderId) {
 }
 window.buyOrder = buyOrder; window.claimOrder = buyOrder;
 document.getElementById('ordersList')?.addEventListener('click', (e) => { const btn = e.target.closest('[data-buy]'); if (btn) buyOrder(btn.getAttribute('data-buy')); });
-
 document.getElementById('rechargeBtn')?.addEventListener('click', () => showView('orders'));
 document.getElementById('sellBtn')?.addEventListener('click', () => { showView('withdraw'); });
