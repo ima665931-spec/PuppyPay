@@ -78,81 +78,96 @@
   border: 1.5px solid #fbbf24 !important;
 }
 .profile-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
-  border-radius: var(--r-lg);
-}
-
-/* ===== Menu list - proper separate buttons ===== */
-.menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 6px !important;
-  overflow: hidden;
-}
-
-.menu-item {
   display: flex !important;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 12px !important;
-  margin: 0;
-  text-align: left;
-  background: transparent !important;
+  gap: 14px;
+  padding: 18px !important;
+  margin-bottom: 14px;
+  border-radius: 16px !important;
+}
+
+/* ===== Mine menu — real separate list buttons ===== */
+#mineView .menu-list,
+.menu-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 4px !important;
+  margin: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+}
+
+#mineView .menu-item,
+.menu-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  min-height: 52px !important;
+  padding: 12px 14px !important;
+  margin: 0 !important;
+  text-align: left !important;
+  background: #fff !important;
   border: none !important;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  transition: background 0.15s;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  line-height: 1.3 !important;
+  box-shadow: none !important;
   -webkit-tap-highlight-color: transparent !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
 }
 
-.menu-item:active {
-  background: #eff6ff !important;
-}
-
-.menu-item .menu-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.menu-item .menu-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.menu-item .arrow {
-  width: 18px;
-  height: 18px;
-  margin-left: auto;
-  color: #94a3b8;
-  flex-shrink: 0;
-}
-
+#mineView .menu-item + .menu-item,
 .menu-item + .menu-item {
-  border-top: 1px solid #f1f5f9;
-  border-radius: 0;
+  border-top: 1px solid #f1f5f9 !important;
 }
 
-.menu-item:first-child {
-  border-radius: 12px 12px 0 0;
+#mineView .menu-item:active,
+.menu-item:active {
+  background: #f1f5f9 !important;
 }
 
-.menu-item:last-child {
-  border-radius: 0 0 12px 12px;
-  border-top: 1px solid #f1f5f9;
+#mineView .menu-item .menu-icon,
+.menu-item .menu-icon {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+#mineView .menu-item .menu-icon svg,
+.menu-item .menu-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  display: block !important;
+}
+
+#mineView .menu-item .arrow,
+.menu-item .arrow {
+  width: 18px !important;
+  height: 18px !important;
+  margin-left: auto !important;
+  color: #94a3b8 !important;
+  flex-shrink: 0 !important;
+}
+
+#mineView .menu-item#logoutBtn,
+.menu-item#logoutBtn {
+  color: #dc2626 !important;
 }
