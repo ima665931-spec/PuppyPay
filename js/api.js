@@ -82,26 +82,45 @@ async function apiCall(path, body) {
   }
 }
 
-async function walletApiCall(path, method = 'GET', body) {
-  const token = localStorage.getItem('puppypay_token');
-  let res;
+async function fetchWithTimeout(url, options, ms) {
+  ms = ms || 12000;
+  var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, ms) : null;
   try {
-    res = await fetch(WALLET_API_BASE + path, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: 'Bearer ' + token } : {})
-      },
-      body: body ? JSON.stringify(body) : undefined
-    });
-  } catch (e) {
-    return { ok: false, data: { success: false, code: 'NETWORK_ERROR', message: 'Could not reach PuppyPay.' } };
+    var opts = Object.assign({}, options || {});
+    if (ctrl) opts.signal = ctrl.signal;
+    return await fetch(url, opts);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
-  let data;
-  try { data = await res.json(); } catch (e) { data = { success: false, message: 'Invalid server response.' }; }
-  if (maybeLock(res.status, data)) return { ok: false, data };
-  if (isAuthFailure(res.status, data)) data = handleAuthFailure(data);
-  return { ok: res.ok, data };
+}
+
+async function walletApiCall(path, method, body) {
+  method = method || 'GET';
+  const token = localStorage.getItem('puppypay_token');
+  const options = {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: 'Bearer ' + token } : {})
+    },
+    body: body ? JSON.stringify(body) : undefined
+  };
+  let lastErr = null;
+  for (var attempt = 0; attempt < 2; attempt++) {
+    try {
+      var res = await fetchWithTimeout(WALLET_API_BASE + path, options, 12000);
+      var data;
+      try { data = await res.json(); } catch (e) { data = { success: false, message: 'Invalid server response.' }; }
+      if (maybeLock(res.status, data)) return { ok: false, data: data };
+      if (isAuthFailure(res.status, data)) data = handleAuthFailure(data);
+      return { ok: res.ok, data: data };
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 0) await new Promise(function (r) { setTimeout(r, 400); });
+    }
+  }
+  return { ok: false, data: { success: false, code: 'NETWORK_ERROR', message: 'Could not reach PuppyPay. Pull to refresh.' } };
 }
 window.__puppypayWalletApiCall = walletApiCall;
 
