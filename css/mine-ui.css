@@ -85,10 +85,74 @@
   margin-bottom: 16px;
   border-radius: var(--r-lg);
 }
+
+/* ===== Menu list - proper separate buttons ===== */
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 6px !important;
+  overflow: hidden;
+}
+
 .menu-item {
-  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
   width: 100%;
+  padding: 14px 12px !important;
+  margin: 0;
   text-align: left;
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.menu-item:active {
+  background: #eff6ff !important;
+}
+
+.menu-item .menu-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.menu-item .menu-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.menu-item .arrow {
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.menu-item + .menu-item {
+  border-top: 1px solid #f1f5f9;
+  border-radius: 0;
+}
+
+.menu-item:first-child {
+  border-radius: 12px 12px 0 0;
+}
+
+.menu-item:last-child {
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid #f1f5f9;
 }
