@@ -31,10 +31,15 @@
     populateUserUI();
     showView('home');
     try {
-      const { ok, data } = await walletApiCall('/dashboard', 'GET');
-      if (ok && data?.success) {
-      } else if (data?.code === 'TOKEN_FAILED') {
-        handleAuthFailure(data);
+      if (typeof loadDashboard === 'function') {
+        await loadDashboard();
+      } else {
+        const { ok, data } = await walletApiCall('/dashboard', 'GET');
+        if (ok && data && data.success) {
+          /* loaded */
+        } else if (data && data.code === 'TOKEN_FAILED') {
+          handleAuthFailure(data);
+        }
       }
     } catch (e) {}
   } else {
@@ -80,38 +85,26 @@ window.addEventListener('load', () => {
         <div class="how-earn-step">
           <div class="how-earn-num">3</div>
           <div class="how-earn-step-body">
-            <div class="how-earn-step-title">Screenshot the payment</div>
-            <div class="how-earn-step-text">After successful payment, take a clear <b>screenshot</b> of the transaction success screen.</div>
+            <div class="how-earn-step-title">Submit UTR + screenshot</div>
+            <div class="how-earn-step-text">Enter the 12-digit UTR and upload payment screenshot. We verify automatically.</div>
           </div>
         </div>
         <div class="how-earn-step">
           <div class="how-earn-num">4</div>
           <div class="how-earn-step-body">
-            <div class="how-earn-step-title">Copy UTR / Reference</div>
-            <div class="how-earn-step-text">Copy the <b>UTR / UPI reference number</b> from the payment confirmation.</div>
+            <div class="how-earn-step-title">Get profit in wallet</div>
+            <div class="how-earn-step-text">After verification, order amount + profit is credited to your wallet.</div>
           </div>
         </div>
-        <div class="how-earn-step">
-          <div class="how-earn-num">5</div>
-          <div class="how-earn-step-body">
-            <div class="how-earn-step-title">Submit proof in app</div>
-            <div class="how-earn-step-text">Back in PuppyPay: paste the <b>UTR</b>, upload the <b>transaction screenshot</b>, and submit. Wait for approval — profit is added to your wallet.</div>
-          </div>
-        </div>
-        <div class="how-earn-tip">💡 Tip: Always pay the exact amount. Wrong amount or blurry screenshots can delay approval.</div>
-        <button type="button" class="btn btn-primary how-earn-close" id="howEarnClose">Got it</button>
+        <button type="button" class="btn btn-primary btn-block" id="howEarnClose">Got it</button>
       </div>`;
     document.body.appendChild(ov);
-    ov.addEventListener('click', function (e) {
-      if (e.target === ov || e.target.id === 'howEarnClose') closeGuide();
-    });
+    requestAnimationFrame(() => ov.classList.add('show'));
+    ov.querySelector('#howEarnClose').onclick = () => {
+      ov.classList.remove('show');
+      setTimeout(() => ov.remove(), 200);
+    };
+    ov.addEventListener('click', (e) => { if (e.target === ov) ov.querySelector('#howEarnClose').click(); });
   }
-  function closeGuide() {
-    const ov = document.getElementById('howEarnOverlay');
-    if (ov) ov.remove();
-  }
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest && e.target.closest('#howEarnBtn');
-    if (btn) openGuide();
-  });
+  document.getElementById('howToEarnBtn')?.addEventListener('click', openGuide);
 })();
