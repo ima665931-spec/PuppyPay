@@ -86,7 +86,7 @@
   border-radius: 16px !important;
 }
 
-/* ===== Mine menu — real separate list buttons ===== */
+/* ===== Mine menu list ===== */
 #mineView .menu-list,
 .menu-list {
   display: flex !important;
@@ -137,6 +137,7 @@
   background: #f1f5f9 !important;
 }
 
+/* Icon box size only — do NOT force colors (inline styles from JS win) */
 #mineView .menu-item .menu-icon,
 .menu-item .menu-icon {
   width: 36px !important;
@@ -147,8 +148,6 @@
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
-  background: #eff6ff !important;
-  color: #2563eb !important;
 }
 
 #mineView .menu-item .menu-icon svg,
