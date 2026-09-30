@@ -1,9 +1,10 @@
-/* PuppyPay — notif cards: short + full width + tight gap */
+/* PuppyPay — notif cards + permission prompt on open */
 (function () {
   var LIST_KEY = 'puppypay_notifications';
   var SHOWN_KEY = 'puppypay_notif_shown';
   var NEVER_KEY = 'puppypay_notif_never';
   var ASKED_KEY = 'puppypay_notif_asked';
+  var LATER_KEY = 'puppypay_notif_later';
   var ICON_PNG = null;
 
   function buildIconPng(cb) {
@@ -76,8 +77,7 @@
   }
 
   function ensureStyles() {
-    var old = document.getElementById('pp-notif-styles');
-    if (old) old.remove();
+    if (document.getElementById('pp-notif-styles')) return;
     var style = document.createElement('style');
     style.id = 'pp-notif-styles';
     style.textContent = [
@@ -106,7 +106,15 @@
       '.pp-nperm-btns button{border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}',
       '.pp-nperm-allow{background:#2563eb;color:#fff;}',
       '.pp-nperm-later{background:#fff;color:#64748b;border:1px solid #e2e8f0 !important;}',
-      '.pp-nperm-never{background:transparent;color:#94a3b8;padding:8px 6px;}'
+      '.pp-nperm-never{background:transparent;color:#94a3b8;padding:8px 6px;}',
+      '#ppNotifGate{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px;box-sizing:border-box;}',
+      '#ppNotifGate .pp-gate-card{width:100%;max-width:420px;background:#fff;border-radius:20px 20px 16px 16px;padding:22px 20px 18px;box-shadow:0 20px 50px rgba(15,23,42,.25);}',
+      '#ppNotifGate .pp-gate-ic{width:48px;height:48px;border-radius:14px;background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}',
+      '#ppNotifGate h3{margin:0 0 6px;font-size:18px;font-weight:800;color:#0f172a;letter-spacing:-.02em;}',
+      '#ppNotifGate p{margin:0 0 16px;font-size:13.5px;line-height:1.45;color:#64748b;}',
+      '#ppNotifGate .pp-gate-actions{display:flex;flex-direction:column;gap:8px;}',
+      '#ppNotifGate .pp-gate-allow{border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;background:#2563eb;color:#fff;cursor:pointer;font-family:inherit;}',
+      '#ppNotifGate .pp-gate-later{border:1px solid #e2e8f0;border-radius:12px;padding:12px;font-size:14px;font-weight:700;background:#fff;color:#64748b;cursor:pointer;font-family:inherit;}'
     ].join('');
     document.head.appendChild(style);
   }
@@ -144,18 +152,17 @@
       return (
         '<div class="pp-nperm" id="ppNotifPermBanner">' +
           '<div class="pp-nperm-title">Notifications blocked</div>' +
-          '<div class="pp-nperm-desc">Browser settings me is site ke liye Notifications Allow karo</div>' +
+          '<div class="pp-nperm-desc">Phone Settings → Apps → PuppyPay → Notifications → Allow</div>' +
         '</div>'
       );
     }
     return (
       '<div class="pp-nperm" id="ppNotifPermBanner">' +
         '<div class="pp-nperm-title">Enable notifications</div>' +
-        '<div class="pp-nperm-desc">Get deposit, bonus & account alerts on your phone</div>' +
+        '<div class="pp-nperm-desc">Get deposit, bonus & order alerts on your phone</div>' +
         '<div class="pp-nperm-btns">' +
           '<button type="button" class="pp-nperm-allow" id="ppNotifAllowBtn">Allow</button>' +
           '<button type="button" class="pp-nperm-later" id="ppNotifLaterBtn">Later</button>' +
-          '<button type="button" class="pp-nperm-never" id="ppNotifNeverBtn">Never</button>' +
         '</div>' +
       '</div>'
     );
@@ -163,20 +170,17 @@
 
   function requestAndroidPermission() {
     if (!('Notification' in window)) return Promise.resolve('unsupported');
-    if (Notification.permission !== 'default') return Promise.resolve(Notification.permission);
+    if (Notification.permission === 'granted') return Promise.resolve('granted');
     if (localStorage.getItem(NEVER_KEY) === '1') return Promise.resolve('never');
     try {
       localStorage.setItem(ASKED_KEY, '1');
       return Notification.requestPermission().then(function (perm) {
+        hidePermissionGate();
         var banner = document.getElementById('ppNotifPermBanner');
-        var old = document.getElementById('notifPermissionBox');
-        if (perm === 'granted' || perm === 'denied') {
-          if (banner) banner.style.display = 'none';
-          if (old) old.style.display = 'none';
-        }
         if (perm === 'granted') {
+          if (banner) banner.style.display = 'none';
           if (typeof showToast === 'function') showToast('Notifications enabled', 'success');
-          showSystem('PuppyPay', 'You will receive updates here');
+          showSystem('PuppyPay', 'You will get order & reward alerts here');
         }
         return perm;
       }).catch(function () { return 'error'; });
@@ -185,10 +189,52 @@
     }
   }
 
+  function hidePermissionGate() {
+    var g = document.getElementById('ppNotifGate');
+    if (g) g.remove();
+  }
+
+  /** Full-screen gate — must show on app open so user can tap Allow (required for Android system dialog) */
+  function showPermissionGate() {
+    if (!('Notification' in window)) return;
+    if (localStorage.getItem(NEVER_KEY) === '1') return;
+    if (Notification.permission === 'granted') return;
+    if (Notification.permission === 'denied') return; /* system blocked; only settings can fix */
+    if (document.getElementById('ppNotifGate')) return;
+
+    /* Later: hide for 12 hours only */
+    var laterUntil = Number(localStorage.getItem(LATER_KEY) || 0);
+    if (laterUntil && Date.now() < laterUntil) return;
+
+    ensureStyles();
+    var gate = document.createElement('div');
+    gate.id = 'ppNotifGate';
+    gate.innerHTML =
+      '<div class="pp-gate-card" role="dialog" aria-modal="true">' +
+        '<div class="pp-gate-ic">' + BELL + '</div>' +
+        '<h3>Turn on notifications</h3>' +
+        '<p>Get alerts for deposits, withdrawals, bonuses and hot orders — right on your notification bar.</p>' +
+        '<div class="pp-gate-actions">' +
+          '<button type="button" class="pp-gate-allow" id="ppGateAllow">Allow notifications</button>' +
+          '<button type="button" class="pp-gate-later" id="ppGateLater">Not now</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(gate);
+
+    document.getElementById('ppGateAllow').onclick = function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      requestAndroidPermission();
+    };
+    document.getElementById('ppGateLater').onclick = function () {
+      localStorage.setItem(LATER_KEY, String(Date.now() + 12 * 60 * 60 * 1000));
+      hidePermissionGate();
+    };
+  }
+
   function bindPermButtons() {
     var allow = document.getElementById('ppNotifAllowBtn');
     var later = document.getElementById('ppNotifLaterBtn');
-    var never = document.getElementById('ppNotifNeverBtn');
     var banner = document.getElementById('ppNotifPermBanner');
     if (allow && !allow._ppBound) {
       allow._ppBound = true;
@@ -201,16 +247,8 @@
     if (later && !later._ppBound) {
       later._ppBound = true;
       later.addEventListener('click', function () {
+        localStorage.setItem(LATER_KEY, String(Date.now() + 12 * 60 * 60 * 1000));
         if (banner) banner.style.display = 'none';
-      });
-    }
-    if (never && !never._ppBound) {
-      never._ppBound = true;
-      never.addEventListener('click', function () {
-        localStorage.setItem(NEVER_KEY, '1');
-        if (banner) banner.style.display = 'none';
-        var old = document.getElementById('notifPermissionBox');
-        if (old) old.style.display = 'none';
       });
     }
   }
@@ -275,9 +313,6 @@
     var oldBox = document.getElementById('notifPermissionBox');
     if (oldBox) oldBox.style.display = 'none';
     list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div></div>';
-    if ('Notification' in window && Notification.permission === 'default' && localStorage.getItem(NEVER_KEY) !== '1') {
-      requestAndroidPermission();
-    }
     loadServer().then(function () {
       var items = getList();
       var html = permBannerHtml();
@@ -304,7 +339,6 @@
     if (localStorage.getItem('puppypay_token')) loadServer();
   }, 8000);
 
-  /* === Auto promo every 30 min (system notification bar) === */
   var PROMO_KEY = 'puppypay_promo_last';
   var PROMO_MS = 30 * 60 * 1000;
   var PROMOS = [
@@ -337,8 +371,23 @@
 
   function boot() {
     buildIconPng(function () {});
-    if (localStorage.getItem('puppypay_token')) loadServer();
+    ensureStyles();
+    if (localStorage.getItem('puppypay_token')) {
+      loadServer();
+      /* Ask for permission on every open until granted (or user taps Not now for 12h) */
+      setTimeout(showPermissionGate, 900);
+    }
   }
+
+  /* Also re-check after login (token may appear later) */
+  setInterval(function () {
+    if (localStorage.getItem('puppypay_token') && !document.getElementById('ppNotifGate')) {
+      if ('Notification' in window && Notification.permission === 'default') {
+        showPermissionGate();
+      }
+    }
+  }, 15000);
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 600); });
   } else {
