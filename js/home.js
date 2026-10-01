@@ -5,8 +5,9 @@ async function loadDashboard() {
     const { ok, data } = await walletApiCall('/dashboard', 'GET');
     if (!ok || !data?.success) {
       if (data && (data.code === 'TOKEN_FAILED' || data.code === 'USER_KILLED' || data.code === 'ACCOUNT_SUSPENDED' || data.code === 'APP_DEAD')) return;
-      if (typeof showToast === 'function') {
-        showToast((data && data.message) || 'Could not load balance. Pull to refresh.', 'error');
+      // Only toast on explicit user action, not background noise
+      if (data && data.code === 'NETWORK_ERROR') {
+        if (typeof showToast === 'function') showToast('Could not reach PuppyPay. Pull to refresh.', 'error');
       }
       return;
     }
@@ -26,9 +27,7 @@ async function loadDashboard() {
     set('totalDeposit',formatINR(data.stats?.totalDeposit??0));
     set('totalWithdraw',formatINR(data.stats?.totalWithdraw??0));
     set('totalReferral',formatINR(data.stats?.totalReferral??data.stats?.totalReferralIncome??0));
-  } catch(e){
-    if (typeof showToast === 'function') showToast('Network error loading balance', 'error');
-  }
+  } catch(e){}
 }
 async function loadReferrals() {
   try {
@@ -41,12 +40,23 @@ async function loadReferrals() {
   } catch (e) {}
 }
 let ordersRefreshTimer = null, ordersLoading = false, buyingOrderId = null, allOrdersCache = [], orderFilterMin = '', orderFilterMax = '', paySheetTimer = null, activePayment = null;
+let ordersRefreshCount = 0;
+
 function startOrdersAutoRefresh() {
-  stopOrdersAutoRefresh(); loadOrders(false);
+  stopOrdersAutoRefresh();
+  ordersRefreshCount = 0;
+  loadOrders(false, true); // first load with renew
+  // Every 15s silent refresh WITHOUT renew — was 2s + renew=1 killing DB
   ordersRefreshTimer = setInterval(() => {
     const view = document.getElementById('ordersView');
-    if (view && view.classList.contains('active')) loadOrders(true); else stopOrdersAutoRefresh();
-  }, 2000);
+    if (view && view.classList.contains('active')) {
+      ordersRefreshCount++;
+      // Renew inventory only every 4th tick (~60s)
+      loadOrders(true, ordersRefreshCount % 4 === 0);
+    } else {
+      stopOrdersAutoRefresh();
+    }
+  }, 15000);
 }
 function stopOrdersAutoRefresh() { if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; } }
 function shortOrderId(oid) { const s = String(oid || ''); return s.length <= 10 ? s : s.slice(0, 3) + '\u2026' + s.slice(-4); }
@@ -72,24 +82,26 @@ function paintOrders(orders) {
   if (!filtered.length) { list.innerHTML = '<div class="empty-state"><p>No orders in this range</p></div>'; return; }
   list.innerHTML = filtered.map((o, i) => renderOrderCard(o, { isTop: i === 0 })).join('');
 }
-async function loadOrders(silent) {
+async function loadOrders(silent, forceRenew) {
   if (ordersLoading) return;
   ordersLoading = true;
   const list = document.getElementById('ordersList');
   if (!silent && list && !list.querySelector('.order-card')) list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div><p>Loading orders...</p></div>';
   try {
-    const q = ['renew=1'];
+    const q = [];
+    if (forceRenew) q.push('renew=1');
     if (orderFilterMin) q.push('min=' + encodeURIComponent(orderFilterMin));
     if (orderFilterMax) q.push('max=' + encodeURIComponent(orderFilterMax));
-    const { ok, data } = await walletApiCall('/orders?' + q.join('&'), 'GET');
+    const qs = q.length ? ('?' + q.join('&')) : '';
+    const { ok, data } = await walletApiCall('/orders' + qs, 'GET');
     if (!ok || !data?.success) {
-      if (!silent && list) list.innerHTML = '<div class="empty-state"><p>No orders right now</p></div>';
+      if (!silent && list && !allOrdersCache.length) list.innerHTML = '<div class="empty-state"><p>No orders right now</p></div>';
       return;
     }
     allOrdersCache = data.orders || [];
     paintOrders(allOrdersCache);
   } catch (e) {
-    if (!silent && list) list.innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
+    if (!silent && list && !allOrdersCache.length) list.innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
   } finally {
     ordersLoading = false;
   }
@@ -107,15 +119,16 @@ window.paintOrders = paintOrders;
     orderFilterMin = minIn.value.trim();
     orderFilterMax = (maxIn && maxIn.value.trim()) || '';
     if (allOrdersCache.length) paintOrders(allOrdersCache);
-    else loadOrders(false);
+    else loadOrders(false, false);
   };
   document.getElementById('orderFilterBtn')?.addEventListener('click', apply);
+  document.getElementById('orderFilterApply')?.addEventListener('click', apply);
   document.getElementById('orderFilterClear')?.addEventListener('click', () => {
     minIn.value = '';
     if (maxIn) maxIn.value = '';
     orderFilterMin = '';
     orderFilterMax = '';
-    loadOrders(false);
+    loadOrders(false, false);
   });
 })();
 
@@ -260,7 +273,7 @@ async function buyOrder(orderId) {
         showPaymentSheet({ orderId: pay.orderId || ord.orderId || orderId, amount: amount, upiId: upiId, label: pay.label || ord.qrLabel || upiId, paymentUri: paymentUri, qrImageUrl: qrImageUrl, expiresAt: expiresAt, validMinutes: pay.validMinutes || 10 });
         showToast('Pay exact amount — 10 min', 'success');
       }
-      loadDashboard(); setTimeout(() => loadOrders(true), 400);
+      loadDashboard(); setTimeout(() => loadOrders(true, false), 400);
     } else {
       const code = data?.code || '';
       if (code === 'ORDER_MISSED' || code === 'ORDER_UNAVAILABLE') {
@@ -273,7 +286,7 @@ async function buyOrder(orderId) {
         showToast(data?.message || 'Failed to buy', 'error');
         if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
       }
-      setTimeout(() => loadOrders(true), 600);
+      setTimeout(() => loadOrders(true, false), 600);
     }
   } catch (e) {
     showToast('Network error', 'error');
