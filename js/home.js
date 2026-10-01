@@ -71,7 +71,7 @@ function startOrdersAutoRefresh() {
   stopOrdersAutoRefresh();
   ordersTick = 0;
   loadOrders(false, true);
-  // Every 4s: refresh list + renew inventory so new orders appear quickly
+  // Every 2.5s: refresh + renew so amounts change fast on All/High/Low/HOT
   ordersRefreshTimer = setInterval(function () {
     var view = document.getElementById('ordersView');
     if (view && view.classList.contains('active')) {
@@ -80,7 +80,7 @@ function startOrdersAutoRefresh() {
     } else {
       stopOrdersAutoRefresh();
     }
-  }, 4000);
+  }, 2500);
 }
 
 function stopOrdersAutoRefresh() {
@@ -127,7 +127,7 @@ function paintOrders(orders) {
 }
 
 async function loadOrders(silent, forceRenew) {
-  if (ordersLoading && Date.now() - ordersLoadStartedAt > 20000) {
+  if (ordersLoading && Date.now() - ordersLoadStartedAt > 8000) {
     ordersLoading = false;
   }
   if (ordersLoading) return;
