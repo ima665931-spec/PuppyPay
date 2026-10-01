@@ -57,7 +57,7 @@ window.addEventListener('load', () => {
   }, 900);
 });
 
-/* How to Earn guide (Orders) */
+/* How to Earn guide (Orders) — top-right button on Orders screen */
 (function initHowEarn() {
   function openGuide() {
     if (document.getElementById('howEarnOverlay')) return;
@@ -106,5 +106,16 @@ window.addEventListener('load', () => {
     };
     ov.addEventListener('click', (e) => { if (e.target === ov) ov.querySelector('#howEarnClose').click(); });
   }
-  document.getElementById('howToEarnBtn')?.addEventListener('click', openGuide);
+  window.openHowToEarnGuide = openGuide;
+  // HTML uses id="howEarnBtn" (top-right on Orders)
+  var btn = document.getElementById('howEarnBtn') || document.getElementById('howToEarnBtn');
+  if (btn) btn.addEventListener('click', openGuide);
+  // Event delegation fallback
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest && e.target.closest('#howEarnBtn, #howToEarnBtn, .how-earn-btn');
+    if (t) {
+      e.preventDefault();
+      openGuide();
+    }
+  });
 })();
