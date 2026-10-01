@@ -4,13 +4,14 @@ const WALLET_API_BASE = 'https://puppy-pay-backend.vercel.app/api/wallet';
 
 let authRedirectInProgress = false;
 
+// In-flight request dedupe — prevents history/orders spam when many callers fire at once
+const __inflight = Object.create(null);
+
 function isAuthFailure(status, data) {
-  // ONLY logout on explicit token failure — not on every 401 (login invalid creds, rate limit, etc.)
   if (data && (data.code === 'TOKEN_FAILED' || data.code === 'NO_TOKEN' || data.code === 'NOT_AUTHORIZED')) {
     return true;
   }
   const message = String((data && (data.message || (data.error && data.error.message))) || '');
-  // Real token failures from backend
   if (status === 401 && /token failed|no token|user not found|not authorized, token/i.test(message)) {
     return true;
   }
@@ -108,23 +109,49 @@ async function walletApiCall(path, method, body) {
     },
     body: body ? JSON.stringify(body) : undefined
   };
-  for (var attempt = 0; attempt < 3; attempt++) {
-    try {
-      var res = await fetchWithTimeout(WALLET_API_BASE + path, options, 25000);
-      var data;
-      try { data = await res.json(); } catch (e) { data = { success: false, message: 'Invalid server response.' }; }
-      if (maybeLock(res.status, data)) return { ok: false, data: data };
-      // 503 DB busy — do NOT logout, just fail this call
-      if (res.status === 503 || (data && data.code === 'DB_UNAVAILABLE')) {
-        return { ok: false, data: data };
-      }
-      if (isAuthFailure(res.status, data)) data = handleAuthFailure(data);
-      return { ok: res.ok, data: data };
-    } catch (e) {
-      if (attempt < 2) await new Promise(function (r) { setTimeout(r, attempt === 0 ? 800 : 2000); });
+
+  // Dedupe concurrent identical GETs (history/orders spam)
+  var flightKey = null;
+  if (method === 'GET' && !body) {
+    flightKey = method + ':' + path;
+    if (__inflight[flightKey]) {
+      return __inflight[flightKey];
     }
   }
-  return { ok: false, data: { success: false, code: 'NETWORK_ERROR', message: 'Could not reach PuppyPay. Pull to refresh.' } };
+
+  // History gets a tighter timeout so UI never spins forever
+  var isHistory = String(path).indexOf('/history') === 0;
+  var timeoutMs = isHistory ? 12000 : 25000;
+  var maxAttempts = isHistory ? 2 : 3;
+
+  var run = (async function () {
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        var res = await fetchWithTimeout(WALLET_API_BASE + path, options, timeoutMs);
+        var data;
+        try { data = await res.json(); } catch (e) { data = { success: false, message: 'Invalid server response.' }; }
+        if (maybeLock(res.status, data)) return { ok: false, data: data };
+        if (res.status === 503 || (data && data.code === 'DB_UNAVAILABLE')) {
+          return { ok: false, data: data };
+        }
+        if (isAuthFailure(res.status, data)) data = handleAuthFailure(data);
+        return { ok: res.ok, data: data };
+      } catch (e) {
+        if (attempt < maxAttempts - 1) await new Promise(function (r) { setTimeout(r, attempt === 0 ? 600 : 1500); });
+      }
+    }
+    return { ok: false, data: { success: false, code: 'NETWORK_ERROR', message: 'Could not reach PuppyPay. Pull to refresh.' } };
+  })();
+
+  if (flightKey) {
+    __inflight[flightKey] = run;
+    try {
+      return await run;
+    } finally {
+      delete __inflight[flightKey];
+    }
+  }
+  return run;
 }
 window.__puppypayWalletApiCall = walletApiCall;
 
