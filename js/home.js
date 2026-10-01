@@ -36,22 +36,16 @@ async function loadReferrals() {
   } catch (e) {}
 }
 let ordersRefreshTimer = null, ordersLoading = false, buyingOrderId = null, allOrdersCache = [], orderFilterMin = '', orderFilterMax = '', paySheetTimer = null, activePayment = null;
-let ordersRefreshCount = 0;
 
 function startOrdersAutoRefresh() {
   stopOrdersAutoRefresh();
-  ordersRefreshCount = 0;
   loadOrders(false, true);
-  // Refresh every 8s like before (smooth), renew inventory only every ~40s
+  // Every 5s — new orders rotate like before
   ordersRefreshTimer = setInterval(() => {
     const view = document.getElementById('ordersView');
-    if (view && view.classList.contains('active')) {
-      ordersRefreshCount++;
-      loadOrders(true, ordersRefreshCount % 5 === 0);
-    } else {
-      stopOrdersAutoRefresh();
-    }
-  }, 8000);
+    if (view && view.classList.contains('active')) loadOrders(true, true);
+    else stopOrdersAutoRefresh();
+  }, 5000);
 }
 function stopOrdersAutoRefresh() { if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; } }
 function shortOrderId(oid) { const s = String(oid || ''); return s.length <= 10 ? s : s.slice(0, 3) + '\u2026' + s.slice(-4); }
@@ -114,7 +108,7 @@ window.paintOrders = paintOrders;
     orderFilterMin = minIn.value.trim();
     orderFilterMax = (maxIn && maxIn.value.trim()) || '';
     if (allOrdersCache.length) paintOrders(allOrdersCache);
-    else loadOrders(false, false);
+    else loadOrders(false, true);
   };
   document.getElementById('orderFilterBtn')?.addEventListener('click', apply);
   document.getElementById('orderFilterApply')?.addEventListener('click', apply);
@@ -123,7 +117,7 @@ window.paintOrders = paintOrders;
     if (maxIn) maxIn.value = '';
     orderFilterMin = '';
     orderFilterMax = '';
-    loadOrders(false, false);
+    loadOrders(false, true);
   });
 })();
 
@@ -133,7 +127,10 @@ async function loadHistory() {
   list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px"></div></div>';
   try {
     const { ok, data } = await walletApiCall('/history', 'GET');
-    if (!ok || !data?.success) { list.innerHTML = '<div class="empty-state"><p>No transactions yet</p></div>'; return; }
+    if (!ok || !data?.success) {
+      list.innerHTML = '<div class="empty-state"><p>' + ((data && data.message) || 'No transactions yet') + '</p></div>';
+      return;
+    }
     const deps = (data.history || data.deposits || []).map(h => ({ ...h, _kind: 'deposit' }));
     const wds = (data.withdrawals || []).map(h => ({ ...h, _kind: 'withdraw' }));
     const items = [...deps, ...wds].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -268,7 +265,7 @@ async function buyOrder(orderId) {
         showPaymentSheet({ orderId: pay.orderId || ord.orderId || orderId, amount: amount, upiId: upiId, label: pay.label || ord.qrLabel || upiId, paymentUri: paymentUri, qrImageUrl: qrImageUrl, expiresAt: expiresAt, validMinutes: pay.validMinutes || 10 });
         showToast('Pay exact amount — 10 min', 'success');
       }
-      loadDashboard(); setTimeout(() => loadOrders(true, false), 400);
+      loadDashboard(); setTimeout(() => loadOrders(true, true), 400);
     } else {
       const code = data?.code || '';
       if (code === 'ORDER_MISSED' || code === 'ORDER_UNAVAILABLE') {
@@ -281,7 +278,7 @@ async function buyOrder(orderId) {
         showToast(data?.message || 'Failed to buy', 'error');
         if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
       }
-      setTimeout(() => loadOrders(true, false), 600);
+      setTimeout(() => loadOrders(true, true), 600);
     }
   } catch (e) {
     showToast('Network error', 'error');
