@@ -16,6 +16,7 @@ function handleAuthFailure(data) {
   localStorage.removeItem('puppypay_user');
   window.__dashboard = null;
   window.__dashboardHistory = null;
+  try { document.documentElement.classList.remove('has-token'); } catch (_) {}
   if (!authRedirectInProgress) {
     authRedirectInProgress = true;
     if (typeof showView === 'function') showView('login');
@@ -32,7 +33,6 @@ function maybeLock(status, data) {
   if (!data) return false;
   var code = data.code || '';
 
-  // Personal block → same full-screen as global kill (this user only)
   if (code === 'USER_KILLED' || (status === 403 && /not available right now/i.test(String(data.message || '')))) {
     try {
       localStorage.removeItem('puppypay_token');
@@ -46,7 +46,6 @@ function maybeLock(status, data) {
     return true;
   }
 
-  // Suspend → logout + suspended message on login screen
   if (code === 'ACCOUNT_SUSPENDED') {
     try {
       localStorage.removeItem('puppypay_token');
@@ -68,11 +67,11 @@ function maybeLock(status, data) {
 
 async function apiCall(path, body) {
   try {
-    const res = await fetch(API_BASE + path, {
+    const res = await fetchWithTimeout(API_BASE + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    });
+    }, 20000);
     let data;
     try { data = await res.json(); } catch (e) { data = { success: false, message: 'Server error' }; }
     maybeLock(res.status, data);
@@ -83,7 +82,7 @@ async function apiCall(path, body) {
 }
 
 async function fetchWithTimeout(url, options, ms) {
-  ms = ms || 12000;
+  ms = ms || 25000;
   var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, ms) : null;
   try {
@@ -107,9 +106,10 @@ async function walletApiCall(path, method, body) {
     body: body ? JSON.stringify(body) : undefined
   };
   let lastErr = null;
-  for (var attempt = 0; attempt < 2; attempt++) {
+  // 3 attempts: immediate, +800ms, +2000ms — handles Vercel cold start
+  for (var attempt = 0; attempt < 3; attempt++) {
     try {
-      var res = await fetchWithTimeout(WALLET_API_BASE + path, options, 12000);
+      var res = await fetchWithTimeout(WALLET_API_BASE + path, options, 25000);
       var data;
       try { data = await res.json(); } catch (e) { data = { success: false, message: 'Invalid server response.' }; }
       if (maybeLock(res.status, data)) return { ok: false, data: data };
@@ -117,7 +117,7 @@ async function walletApiCall(path, method, body) {
       return { ok: res.ok, data: data };
     } catch (e) {
       lastErr = e;
-      if (attempt === 0) await new Promise(function (r) { setTimeout(r, 400); });
+      if (attempt < 2) await new Promise(function (r) { setTimeout(r, attempt === 0 ? 800 : 2000); });
     }
   }
   return { ok: false, data: { success: false, code: 'NETWORK_ERROR', message: 'Could not reach PuppyPay. Pull to refresh.' } };
