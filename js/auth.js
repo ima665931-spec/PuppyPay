@@ -1,5 +1,20 @@
 /* PuppyPay v2 — Auth forms */
 
+function applyAuthSuccess(data) {
+  if (!data || !data.token) return;
+  localStorage.setItem('puppypay_token', data.token);
+  localStorage.setItem('puppypay_user', JSON.stringify(data.user || {}));
+  try { document.documentElement.classList.add('has-token'); } catch (_) {}
+  if (typeof populateUserUI === 'function') populateUserUI();
+  // Immediately show balance from login response (don't wait for dashboard)
+  try {
+    var bal = document.getElementById('balanceAmount');
+    if (bal && data.user && data.user.balance != null) {
+      bal.textContent = (typeof formatINR === 'function') ? formatINR(data.user.balance) : ('\u20b9' + Number(data.user.balance));
+    }
+  } catch (_) {}
+}
+
 // Send OTP (register)
 document.getElementById('sendOtpBtn')?.addEventListener('click', async () => {
   const email = document.getElementById('regEmail').value.trim();
@@ -45,11 +60,8 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
   btn.textContent = 'Create Account';
 
   if (ok && data.success) {
-    localStorage.setItem('puppypay_token', data.token);
-    localStorage.setItem('puppypay_user', JSON.stringify(data.user));
-    try { document.documentElement.classList.add('has-token'); } catch (_) {}
-    populateUserUI();
-    showToast('Account created!', 'success');
+    applyAuthSuccess(data);
+    showToast(data.message || 'Account created!', 'success');
     setTimeout(() => showView('home'), 600);
   } else {
     showToast(data.message || 'Registration failed', 'error');
@@ -71,10 +83,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   btn.textContent = 'Log In';
 
   if (ok && data.success) {
-    localStorage.setItem('puppypay_token', data.token);
-    localStorage.setItem('puppypay_user', JSON.stringify(data.user));
-    try { document.documentElement.classList.add('has-token'); } catch (_) {}
-    populateUserUI();
+    applyAuthSuccess(data);
     showToast('Welcome back!', 'success');
     setTimeout(() => showView('home'), 400);
   } else {
@@ -133,7 +142,7 @@ document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
   }
 });
 
-/* ——— Google Sign-In (minimal, does not touch other auth) ——— */
+/* ——— Google Sign-In ——— */
 (function initGoogleAuth() {
   function ensureGoogleBtn(parentSelector) {
     var parent = document.querySelector(parentSelector);
@@ -156,10 +165,6 @@ document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
   }
 
   async function onGoogleClick() {
-    try {
-      var cfg = await apiCall('/google-config', {});
-      // google-config is GET on backend; apiCall is POST — use fetch directly
-    } catch (_) {}
     var clientId = null;
     try {
       var res = await fetch('https://puppy-pay-backend.vercel.app/api/auth/google-config');
@@ -167,10 +172,9 @@ document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
       if (j && j.enabled && j.clientId) clientId = j.clientId;
     } catch (e) {}
     if (!clientId) {
-      showToast('Google login not configured yet. Set GOOGLE_CLIENT_ID on backend.', 'error');
+      showToast('Google login not configured yet.', 'error');
       return;
     }
-    // Load Google Identity Services
     if (!window.google || !window.google.accounts) {
       await new Promise(function (resolve, reject) {
         var s = document.createElement('script');
@@ -191,10 +195,7 @@ document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
         showToast('Signing in with Google...');
         var { ok, data } = await apiCall('/google', { idToken: resp.credential });
         if (ok && data && data.success) {
-          localStorage.setItem('puppypay_token', data.token);
-          localStorage.setItem('puppypay_user', JSON.stringify(data.user));
-          try { document.documentElement.classList.add('has-token'); } catch (_) {}
-          if (typeof populateUserUI === 'function') populateUserUI();
+          applyAuthSuccess(data);
           showToast(data.message || 'Welcome!', 'success');
           setTimeout(function () { showView('home'); }, 400);
         } else {
