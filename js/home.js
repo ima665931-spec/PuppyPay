@@ -5,10 +5,6 @@ async function loadDashboard() {
     const { ok, data } = await walletApiCall('/dashboard', 'GET');
     if (!ok || !data?.success) {
       if (data && (data.code === 'TOKEN_FAILED' || data.code === 'USER_KILLED' || data.code === 'ACCOUNT_SUSPENDED' || data.code === 'APP_DEAD')) return;
-      // Only toast on explicit user action, not background noise
-      if (data && data.code === 'NETWORK_ERROR') {
-        if (typeof showToast === 'function') showToast('Could not reach PuppyPay. Pull to refresh.', 'error');
-      }
       return;
     }
     window.__dashboard = data;
@@ -45,18 +41,17 @@ let ordersRefreshCount = 0;
 function startOrdersAutoRefresh() {
   stopOrdersAutoRefresh();
   ordersRefreshCount = 0;
-  loadOrders(false, true); // first load with renew
-  // Every 15s silent refresh WITHOUT renew — was 2s + renew=1 killing DB
+  loadOrders(false, true);
+  // Refresh every 8s like before (smooth), renew inventory only every ~40s
   ordersRefreshTimer = setInterval(() => {
     const view = document.getElementById('ordersView');
     if (view && view.classList.contains('active')) {
       ordersRefreshCount++;
-      // Renew inventory only every 4th tick (~60s)
-      loadOrders(true, ordersRefreshCount % 4 === 0);
+      loadOrders(true, ordersRefreshCount % 5 === 0);
     } else {
       stopOrdersAutoRefresh();
     }
-  }, 15000);
+  }, 8000);
 }
 function stopOrdersAutoRefresh() { if (ordersRefreshTimer) { clearInterval(ordersRefreshTimer); ordersRefreshTimer = null; } }
 function shortOrderId(oid) { const s = String(oid || ''); return s.length <= 10 ? s : s.slice(0, 3) + '\u2026' + s.slice(-4); }

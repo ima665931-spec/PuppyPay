@@ -5,10 +5,16 @@ const WALLET_API_BASE = 'https://puppy-pay-backend.vercel.app/api/wallet';
 let authRedirectInProgress = false;
 
 function isAuthFailure(status, data) {
+  // ONLY logout on explicit token failure — not on every 401 (login invalid creds, rate limit, etc.)
+  if (data && (data.code === 'TOKEN_FAILED' || data.code === 'NO_TOKEN' || data.code === 'NOT_AUTHORIZED')) {
+    return true;
+  }
   const message = String((data && (data.message || (data.error && data.error.message))) || '');
-  return status === 401 ||
-    (data && (data.code === 'TOKEN_FAILED' || data.code === 'NOT_AUTHORIZED')) ||
-    /not authorized|token failed|unauthorized|session has ended/i.test(message);
+  // Real token failures from backend
+  if (status === 401 && /token failed|no token|user not found|not authorized, token/i.test(message)) {
+    return true;
+  }
+  return false;
 }
 
 function handleAuthFailure(data) {
@@ -28,7 +34,6 @@ function handleAuthFailure(data) {
 
 window.__puppypayHandleAuthFailure = handleAuthFailure;
 
-/** Block / Suspend / Global kill handling from API responses */
 function maybeLock(status, data) {
   if (!data) return false;
   var code = data.code || '';
@@ -56,8 +61,6 @@ function maybeLock(status, data) {
     if (typeof showToast === 'function') {
       showToast(data.message || 'Your account has been suspended. Contact support.', 'error');
     }
-    var errEl = document.getElementById('loginError');
-    if (errEl) errEl.textContent = data.message || 'Your account has been suspended. Contact support.';
     return true;
   }
 
@@ -71,7 +74,7 @@ async function apiCall(path, body) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    }, 20000);
+    }, 25000);
     let data;
     try { data = await res.json(); } catch (e) { data = { success: false, message: 'Server error' }; }
     maybeLock(res.status, data);
@@ -105,18 +108,19 @@ async function walletApiCall(path, method, body) {
     },
     body: body ? JSON.stringify(body) : undefined
   };
-  let lastErr = null;
-  // 3 attempts: immediate, +800ms, +2000ms — handles Vercel cold start
   for (var attempt = 0; attempt < 3; attempt++) {
     try {
       var res = await fetchWithTimeout(WALLET_API_BASE + path, options, 25000);
       var data;
       try { data = await res.json(); } catch (e) { data = { success: false, message: 'Invalid server response.' }; }
       if (maybeLock(res.status, data)) return { ok: false, data: data };
+      // 503 DB busy — do NOT logout, just fail this call
+      if (res.status === 503 || (data && data.code === 'DB_UNAVAILABLE')) {
+        return { ok: false, data: data };
+      }
       if (isAuthFailure(res.status, data)) data = handleAuthFailure(data);
       return { ok: res.ok, data: data };
     } catch (e) {
-      lastErr = e;
       if (attempt < 2) await new Promise(function (r) { setTimeout(r, attempt === 0 ? 800 : 2000); });
     }
   }
