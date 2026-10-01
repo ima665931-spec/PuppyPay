@@ -3,7 +3,13 @@ async function loadDashboard() {
   if (!localStorage.getItem('puppypay_token')) return;
   try {
     const { ok, data } = await walletApiCall('/dashboard', 'GET');
-    if (!ok || !data?.success) return;
+    if (!ok || !data?.success) {
+      if (data && (data.code === 'TOKEN_FAILED' || data.code === 'USER_KILLED' || data.code === 'ACCOUNT_SUSPENDED' || data.code === 'APP_DEAD')) return;
+      if (typeof showToast === 'function') {
+        showToast((data && data.message) || 'Could not load balance. Pull to refresh.', 'error');
+      }
+      return;
+    }
     window.__dashboard = data;
     const u = data.user || {};
     try { const c = JSON.parse(localStorage.getItem('puppypay_user')||'{}'); c.balance=u.balance; c.name=u.name||c.name; c.appId=u.appId||c.appId; c.referralCode=u.referralCode||c.referralCode; localStorage.setItem('puppypay_user',JSON.stringify(c)); } catch(_){}
@@ -20,7 +26,9 @@ async function loadDashboard() {
     set('totalDeposit',formatINR(data.stats?.totalDeposit??0));
     set('totalWithdraw',formatINR(data.stats?.totalWithdraw??0));
     set('totalReferral',formatINR(data.stats?.totalReferral??data.stats?.totalReferralIncome??0));
-  } catch(e){}
+  } catch(e){
+    if (typeof showToast === 'function') showToast('Network error loading balance', 'error');
+  }
 }
 async function loadReferrals() {
   try {
