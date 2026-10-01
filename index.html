@@ -35,6 +35,24 @@
     html.has-token #registerView,
     html.has-token #loginView,
     html.has-token #forgotView { display: none !important; }
+
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 16px 0 14px; color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.28);
+    }
+    .google-btn-slot {
+      display: flex; justify-content: center; min-height: 44px;
+    }
+    .google-auth-wrap.busy { opacity: 0.6; pointer-events: none; }
+    .btn-google {
+      width: 100%; height: 48px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.95); color: #1f2937;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -68,6 +86,10 @@
         <div class="field"><label>Referral Code <span class="optional">(optional)</span></label><div class="input-shell"><input type="text" id="regReferralCode" placeholder="Friend's code" autocomplete="off"></div></div>
         <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
       </form>
+      <div class="google-auth-wrap" style="display:none">
+        <div class="auth-divider"><span>or</span></div>
+        <div id="googleRegisterBtn" class="google-btn-slot"></div>
+      </div>
       <div class="auth-switch">Already have an account? <a id="goToLogin">Log in</a></div>
     </div>
   </div>
@@ -84,6 +106,10 @@
         <div class="forgot-link"><a id="goToForgot">Forgot password?</a></div>
         <button type="submit" class="btn btn-primary btn-block btn-lg">Log In</button>
       </form>
+      <div class="google-auth-wrap" style="display:none">
+        <div class="auth-divider"><span>or</span></div>
+        <div id="googleLoginBtn" class="google-btn-slot"></div>
+      </div>
       <div class="auth-switch">New here? <a id="goToRegister">Create account</a></div>
     </div>
   </div>
@@ -253,6 +279,7 @@
   <script src="js/core.js"></script>
   <script src="js/app-kill.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/auth-google.js"></script>
   <script src="js/home.js"></script>
   <script src="js/order-commission.js"></script>
   <script src="js/referral.js"></script>
