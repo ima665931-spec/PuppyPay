@@ -1,4 +1,4 @@
-/* PuppyPay — Selling window: swipe-to-sell + asset UPI logos */
+/* PuppyPay — Selling window: swipe-to-sell + remaining daily orders */
 (function () {
   const NAME_KEY = 'puppypay_sell_name';
   const SWIPE_THRESHOLD = 110;
@@ -12,6 +12,8 @@
     message: '',
     savedUpiIds: [],
     submitting: false,
+    remainingSells: null,
+    dailySellLimit: null,
   };
 
   function detectUpiBrand(upi) {
@@ -91,7 +93,7 @@
     if (!view) return false;
     const content = view.querySelector('.page-content');
     if (!content) return false;
-    if (content.dataset.sellUi === '3') return true;
+    if (content.dataset.sellUi === '4') return true;
 
     content.innerHTML = `
       <div class="sell-step active" id="sellStepWelcome">
@@ -116,15 +118,22 @@
 
       <div class="sell-step" id="sellStepMain">
         <div class="sell-info-row">
-          <div class="sell-info-card" id="sellMaxCard">
-            <div class="lbl">Max sellable</div>
-            <div class="val" id="sellMaxAmount">₹0</div>
-            <div class="sub" id="sellMaxSub">Multiple of ₹100</div>
+          <div class="sell-info-card" id="sellRemainCard">
+            <div class="lbl">Today's remaining orders</div>
+            <div class="val" id="sellRemainVal">—</div>
+            <div class="sub" id="sellRemainSub">Orders left to sell (24h)</div>
           </div>
           <div class="sell-info-card" id="sellEligCard">
             <div class="lbl">Status</div>
             <div class="val sm" id="sellEligText">—</div>
             <div class="sub" id="sellEligSub"></div>
+          </div>
+        </div>
+        <div class="sell-info-row" style="margin-top:10px">
+          <div class="sell-info-card" id="sellMaxCard" style="flex:1">
+            <div class="lbl">Max sellable</div>
+            <div class="val" id="sellMaxAmount">₹0</div>
+            <div class="sub" id="sellMaxSub">Multiple of ₹100</div>
           </div>
         </div>
 
@@ -141,7 +150,7 @@
         <div id="sellFeedback"></div>
       </div>
     `;
-    content.dataset.sellUi = '3';
+    content.dataset.sellUi = '4';
 
     const nameEl = document.getElementById('sellNameInput');
     const existing = getStoredName();
@@ -180,6 +189,8 @@
       sellState.firstOrderDone = !!data.firstOrderDone;
       sellState.message = data.message || '';
       sellState.savedUpiIds = data.savedUpiIds || [];
+      sellState.remainingSells = data.remainingSells != null ? Number(data.remainingSells) : null;
+      sellState.dailySellLimit = data.dailySellLimit != null ? Number(data.dailySellLimit) : null;
       if (data.name && data.name !== 'PuppyPay User' && !sellState.name) {
         sellState.name = data.name;
         setStoredName(data.name);
@@ -194,6 +205,26 @@
     }
   }
 
+  function paintRemaining() {
+    const remainEl = document.getElementById('sellRemainVal');
+    const remainSub = document.getElementById('sellRemainSub');
+    const remainCard = document.getElementById('sellRemainCard');
+    if (remainEl) {
+      if (sellState.remainingSells == null) {
+        remainEl.textContent = '∞';
+        if (remainSub) remainSub.textContent = 'No daily limit set';
+      } else {
+        remainEl.textContent = String(sellState.remainingSells);
+        if (remainSub) remainSub.textContent = sellState.dailySellLimit != null ? ('of ' + sellState.dailySellLimit + ' / 24h') : 'Orders left (24h)';
+      }
+    }
+    if (remainCard) {
+      const okR = sellState.remainingSells == null || sellState.remainingSells > 0;
+      remainCard.classList.toggle('ok', okR);
+      remainCard.classList.toggle('bad', !okR);
+    }
+  }
+
   function paintMain() {
     const maxEl = document.getElementById('sellMaxAmount');
     const maxSub = document.getElementById('sellMaxSub');
@@ -201,6 +232,7 @@
     const eligText = document.getElementById('sellEligText');
     const eligSub = document.getElementById('sellEligSub');
     const eligCard = document.getElementById('sellEligCard');
+    paintRemaining();
     if (maxEl) maxEl.textContent = formatINR(sellState.maxAmount);
     if (maxSub) maxSub.textContent = 'Wallet ' + formatINR(sellState.balance) + ' · ×₹100';
     if (maxCard) {
@@ -223,6 +255,7 @@
     const eligText = document.getElementById('sellEligText');
     const eligSub = document.getElementById('sellEligSub');
     const eligCard = document.getElementById('sellEligCard');
+    paintRemaining();
     if (maxEl) maxEl.textContent = formatINR(sellState.maxAmount);
     if (maxSub) maxSub.textContent = 'Wallet ' + formatINR(sellState.balance) + ' · ×₹100';
     if (maxCard) {
@@ -257,8 +290,8 @@
               '<div class="sell-upi-tag">' + brandLabel(brand) + '</div>' +
             '</div>' +
             '<div class="sell-upi-actions">' +
-              '<button type="button" class="sell-upi-edit" data-edit-upi="' + upi + '" title="Edit" aria-label="Edit UPI">' + ICON_PENCIL + '</button>' +
-              '<button type="button" class="sell-upi-del" data-del-upi="' + upi + '" title="Delete" aria-label="Delete UPI">' + ICON_TRASH + '</button>' +
+              '<button type="button" class="sell-upi-edit" data-edit-upi="' + upi + '" title="Edit">' + ICON_PENCIL + '</button>' +
+              '<button type="button" class="sell-upi-del" data-del-upi="' + upi + '" title="Delete">' + ICON_TRASH + '</button>' +
             '</div>' +
           '</div>' +
         '</div>'
@@ -407,6 +440,10 @@
         sellState.message = (data && data.message) || 'Not eligible';
         sellState.maxAmount = Number(data && data.maxAmount) || 0;
         sellState.balance = Number(data && data.balance) || 0;
+        if (data) {
+          sellState.remainingSells = data.remainingSells != null ? Number(data.remainingSells) : null;
+          sellState.dailySellLimit = data.dailySellLimit != null ? Number(data.dailySellLimit) : null;
+        }
         paintMainKeepList();
         spinBack(card, rail, unlock);
         if (fb) fb.innerHTML = '<div class="sell-error">' + (sellState.message || 'Eligibility failed — card returned.') + '</div>';
@@ -475,68 +512,31 @@
     } catch (e) { showToast('Network error', 'error'); }
   }
 
-  async function onEditUpi(oldUpi) {
-    var next = window.prompt('Edit UPI ID', oldUpi);
-    if (next == null) return;
-    next = String(next).trim().toLowerCase();
-    if (!next || next === oldUpi) return;
-    if (!/^[a-z0-9._\-]{2,256}@[a-z]{2,64}$/.test(next)) {
-      showToast('Enter valid UPI (e.g. name@ybl)', 'error');
-      return;
+  function onEditUpi(upi) {
+    const input = document.getElementById('sellUpiInput');
+    if (input) {
+      input.value = upi;
+      input.focus();
     }
-    try {
-      var del = await walletApiCall('/upi', 'DELETE', { upiId: oldUpi });
-      if (!del.ok || !del.data?.success) {
-        showToast(del.data?.message || 'Could not update', 'error');
-        return;
-      }
-      var add = await walletApiCall('/upi', 'POST', { upiId: next });
-      if (add.ok && add.data?.success) {
-        sellState.savedUpiIds = add.data.savedUpiIds || [];
-        renderUpiList();
-        showToast('UPI updated', 'success');
-      } else {
-        try { await walletApiCall('/upi', 'POST', { upiId: oldUpi }); } catch (_) {}
-        sellState.savedUpiIds = (del.data && del.data.savedUpiIds) || sellState.savedUpiIds;
-        if (sellState.savedUpiIds.indexOf(oldUpi) < 0) sellState.savedUpiIds.push(oldUpi);
-        renderUpiList();
-        showToast(add.data?.message || 'Could not update', 'error');
-      }
-    } catch (e) {
-      showToast('Network error', 'error');
-    }
+    onDeleteUpi(upi);
   }
 
-  window.openSellingWindow = function openSellingWindow() {
-    ensureSellUI();
-    const stored = getStoredName();
-    if (stored) {
-      sellState.name = stored;
+  function initSellWindow() {
+    if (!ensureSellUI()) return;
+    const name = getStoredName();
+    if (name) {
+      sellState.name = name;
       showSellStep('sellStepCheck');
       runEligibilityCheck();
-    } else showSellStep('sellStepWelcome');
-    showView('withdraw');
-  };
-
-  document.getElementById('sellBtn')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    openSellingWindow();
-  });
-
-  document.addEventListener('click', (e) => {
-    const menu = e.target.closest && e.target.closest('#menuWithdraw');
-    if (menu) {
-      e.preventDefault();
-      e.stopPropagation();
-      openSellingWindow();
+    } else {
+      showSellStep('sellStepWelcome');
     }
-  }, true);
-
-  const obs = new MutationObserver(() => {
-    const v = document.getElementById('withdrawView');
-    if (v && v.classList.contains('active')) ensureSellUI();
-  });
-  if (document.getElementById('withdrawView')) {
-    obs.observe(document.getElementById('withdrawView'), { attributes: true, attributeFilter: ['class'] });
   }
+
+  window.initSellWindow = initSellWindow;
+  window.refreshSellEligibility = runEligibilityCheck;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('withdrawView')) initSellWindow();
+  });
 })();
