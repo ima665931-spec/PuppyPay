@@ -93,7 +93,7 @@
     if (!view) return false;
     const content = view.querySelector('.page-content');
     if (!content) return false;
-    if (content.dataset.sellUi === '4') return true;
+    if (content.dataset.sellUi === '5') return true;
 
     content.innerHTML = `
       <div class="sell-step active" id="sellStepWelcome">
@@ -129,12 +129,10 @@
             <div class="sub" id="sellEligSub"></div>
           </div>
         </div>
-        <div class="sell-info-row" style="margin-top:10px">
-          <div class="sell-info-card" id="sellMaxCard" style="flex:1">
-            <div class="lbl">Max sellable</div>
-            <div class="val" id="sellMaxAmount">₹0</div>
-            <div class="sub" id="sellMaxSub">Multiple of ₹100</div>
-          </div>
+        <div class="sell-info-card sell-max-full" id="sellMaxCard" style="width:100%;margin-top:10px;display:block;box-sizing:border-box">
+          <div class="lbl">Max sellable</div>
+          <div class="val" id="sellMaxAmount">₹0</div>
+          <div class="sub" id="sellMaxSub">Multiple of ₹100</div>
         </div>
 
         <div class="sell-section-title">Add UPI</div>
@@ -150,7 +148,7 @@
         <div id="sellFeedback"></div>
       </div>
     `;
-    content.dataset.sellUi = '4';
+    content.dataset.sellUi = '5';
 
     const nameEl = document.getElementById('sellNameInput');
     const existing = getStoredName();
