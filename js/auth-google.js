@@ -4,6 +4,7 @@
   var clientId = null;
   var gisReady = false;
   var initStarted = false;
+  var gisInitialized = false;
 
   function setBusy(busy) {
     document.querySelectorAll('.google-auth-wrap').forEach(function (w) {
@@ -59,15 +60,37 @@
     }
   }
 
-  function renderButtons() {
-    if (!gisReady || !clientId || typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
+  function ensureGisInit() {
+    if (!gisReady || !clientId || typeof google === 'undefined' || !google.accounts || !google.accounts.id) return false;
+    if (!gisInitialized) {
+      try {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          use_fedcm_for_prompt: true,
+        });
+        gisInitialized = true;
+      } catch (e) {
+        try {
+          google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+          gisInitialized = true;
+        } catch (_) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
-    google.accounts.id.initialize({
-      client_id: clientId,
-      callback: handleCredentialResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-    });
+  function renderButtons() {
+    if (!ensureGisInit()) return;
 
     [
       { id: 'googleLoginBtn', text: 'signin_with' },
@@ -94,7 +117,13 @@
       } catch (e) {
         el.innerHTML = '<button type="button" class="btn-google">Continue with Google</button>';
         var btn = el.querySelector('button');
-        if (btn) btn.onclick = function () { try { google.accounts.id.prompt(); } catch (_) {} };
+        if (btn) {
+          btn.onclick = function () {
+            try {
+              google.accounts.id.prompt();
+            } catch (_) {}
+          };
+        }
       }
     });
   }
@@ -123,6 +152,11 @@
       gisReady = true;
       renderButtons();
     };
+    s.onerror = function () {
+      document.querySelectorAll('.google-auth-wrap').forEach(function (w) {
+        w.style.display = 'none';
+      });
+    };
     document.head.appendChild(s);
   }
 
@@ -139,7 +173,7 @@
         });
         return;
       }
-      clientId = data.clientId;
+      clientId = String(data.clientId).trim();
       document.querySelectorAll('.google-auth-wrap').forEach(function (w) {
         w.style.display = '';
       });
