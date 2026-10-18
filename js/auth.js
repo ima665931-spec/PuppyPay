@@ -6,7 +6,6 @@ function applyAuthSuccess(data) {
   localStorage.setItem('puppypay_user', JSON.stringify(data.user || {}));
   try { document.documentElement.classList.add('has-token'); } catch (_) {}
   if (typeof populateUserUI === 'function') populateUserUI();
-  // Immediately show balance from login response (don't wait for dashboard)
   try {
     var bal = document.getElementById('balanceAmount');
     if (bal && data.user && data.user.balance != null) {
@@ -15,7 +14,38 @@ function applyAuthSuccess(data) {
   } catch (_) {}
 }
 
-// Send OTP (register)
+/** Capture ?ref=CODE from invite link → prefill register + remember */
+function captureReferralFromUrl() {
+  try {
+    var params = new URLSearchParams(window.location.search || '');
+    var ref = (params.get('ref') || params.get('referral') || params.get('code') || '').trim().toUpperCase();
+    if (!ref && window.location.hash) {
+      var h = String(window.location.hash).replace(/^#/, '');
+      if (h.indexOf('ref=') >= 0 || h.indexOf('=') >= 0) {
+        var hp = new URLSearchParams(h.indexOf('?') >= 0 ? h.split('?')[1] : h);
+        ref = (hp.get('ref') || hp.get('referral') || '').trim().toUpperCase();
+      }
+    }
+    if (ref && /^[A-Z0-9]{4,24}$/.test(ref)) {
+      localStorage.setItem('puppypay_ref', ref);
+    }
+    var saved = (localStorage.getItem('puppypay_ref') || '').trim().toUpperCase();
+    var input = document.getElementById('regReferralCode');
+    if (input && saved && !String(input.value || '').trim()) input.value = saved;
+    if (saved && !localStorage.getItem('puppypay_token')) {
+      if (typeof showView === 'function') {
+        setTimeout(function () { showView('register'); }, 80);
+      }
+    }
+  } catch (_) {}
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', captureReferralFromUrl);
+} else {
+  captureReferralFromUrl();
+}
+
 document.getElementById('sendOtpBtn')?.addEventListener('click', async () => {
   const email = document.getElementById('regEmail').value.trim();
   const btn = document.getElementById('sendOtpBtn');
@@ -33,7 +63,6 @@ document.getElementById('sendOtpBtn')?.addEventListener('click', async () => {
   }
 });
 
-// Register
 document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const mobile = document.getElementById('regMobile').value.trim();
@@ -41,7 +70,10 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
   const otp = document.getElementById('regOtp').value.trim();
   const password = document.getElementById('regPassword').value;
   const confirmPassword = document.getElementById('regConfirmPassword').value;
-  const referralCode = (document.getElementById('regReferralCode')?.value || '').trim().toUpperCase();
+  let referralCode = (document.getElementById('regReferralCode')?.value || '').trim().toUpperCase();
+  if (!referralCode) {
+    try { referralCode = (localStorage.getItem('puppypay_ref') || '').trim().toUpperCase(); } catch (_) {}
+  }
 
   if (password !== confirmPassword) {
     showToast('Passwords do not match', 'error');
@@ -53,13 +85,14 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
   btn.textContent = 'Creating...';
 
   const { ok, data } = await apiCall('/register', {
-    mobile, email, otp, password, confirmPassword, referralCode
+    mobile, email, otp, password, confirmPassword, referralCode: referralCode || undefined
   });
 
   btn.disabled = false;
   btn.textContent = 'Create Account';
 
   if (ok && data.success) {
+    try { localStorage.removeItem('puppypay_ref'); } catch (_) {}
     applyAuthSuccess(data);
     showToast(data.message || 'Account created!', 'success');
     setTimeout(() => showView('home'), 600);
@@ -68,7 +101,6 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
   }
 });
 
-// Login
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const loginId = document.getElementById('loginId').value.trim();
@@ -92,7 +124,6 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   }
 });
 
-// Forgot OTP
 document.getElementById('sendForgotOtpBtn')?.addEventListener('click', async () => {
   const id = document.getElementById('forgotId').value.trim();
   const btn = document.getElementById('sendForgotOtpBtn');
@@ -110,7 +141,6 @@ document.getElementById('sendForgotOtpBtn')?.addEventListener('click', async () 
   }
 });
 
-// Forgot reset
 document.getElementById('forgotForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const loginId = document.getElementById('forgotId').value.trim();
